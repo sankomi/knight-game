@@ -10,6 +10,17 @@ app.use(express.static(path.join(__dirname, "static")));
 let current = 0;
 const clients = new Map();
 
+const game = {
+	turn: 0,
+	player: 0,
+	board: [
+		["", "", "", ""],
+		["", "K", "", ""],
+		["", "", "", ""],
+		["", "", "", ""],
+	],
+}
+
 function send(client, event, data) {
 	if (!clients.has(client)) return;
 
@@ -39,12 +50,32 @@ app.get("/event", (req, res) => {
 		});
 	});
 
+	moveKnight();
+
 	send(res, "setid", id);
 	clients.forEach((info, client) => {
 		if (client === res) return;
 
 		send(client, "enter", {id});
 	});
+
+	send(res, "game", game);
 });
+
+function moveKnight() {
+	let oneone = game.board[1][1];
+	let zerothree = game.board[0][3];
+	if (oneone === "K") {
+		game.board[0][3] = "K";
+		game.board[1][1] = "";
+	} else {
+		game.board[0][3] = "";
+		game.board[1][1] = "K";
+	}
+
+	clients.forEach((info, client) => {
+		send(client, "game", game);
+	});
+}
 
 app.listen(port, () => console.log(`on ${port}`));
