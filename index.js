@@ -50,8 +50,6 @@ app.get("/event", (req, res) => {
 		});
 	});
 
-	moveKnight();
-
 	send(res, "setid", id);
 	clients.forEach((info, client) => {
 		if (client === res) return;
@@ -62,16 +60,40 @@ app.get("/event", (req, res) => {
 	send(res, "game", game);
 });
 
-function moveKnight() {
-	let oneone = game.board[1][1];
-	let zerothree = game.board[0][3];
-	if (oneone === "K") {
-		game.board[0][3] = "K";
-		game.board[1][1] = "";
-	} else {
-		game.board[0][3] = "";
-		game.board[1][1] = "K";
+app.put("/move/:x/:y/", (req, res) => {
+	const x = req.params.x;
+	const y = req.params.y;
+	moveKnight(x, y);
+	res.sendStatus(200);
+});
+
+function moveKnight(x, y) {
+	const board = game.board;
+	let cx, cy;
+
+	search:
+	for (let i = 0; i < board.length; i++) {
+		for (let j = 0; j < board[i].length; j++) {
+			if (board[i][j] === "K") {
+				cx = j;
+				cy = i;
+				break search;
+			}
+		}
 	}
+
+	let dx = Math.abs(cx - x);
+	let dy = Math.abs(cy - y);
+
+	if (dx + dy === 3) {
+		board[cy][cx] = "";
+		board[y][x] = "K";
+	} else {
+		return;
+	}
+
+	game.turn++;
+	game.player = 1 - game.player;
 
 	clients.forEach((info, client) => {
 		send(client, "game", game);

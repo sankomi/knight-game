@@ -25,6 +25,12 @@ for (let i = 0; i < 16; i++) {
 	}
 	cells[cells.length - 1].push(span);
 	div.appendChild(span);
+
+	const x = i % 4;
+	const y = Math.floor(i / 4);
+	span.addEventListener("click", event => {
+		fetch(`/move/${x}/${y}`, {method: "PUT"});
+	});
 }
 
 ["message", "setid", "enter", "leave"].forEach(type => {
