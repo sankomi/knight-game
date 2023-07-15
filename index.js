@@ -10,6 +10,7 @@ app.use(express.static(path.join(__dirname, "static")));
 let current = 0;
 const clients = new Map();
 
+const players = [-1, -1];
 const game = {
 	turn: 0,
 	player: 0,
@@ -30,11 +31,24 @@ function send(client, event, data) {
 	client.write(`data: ${JSON.stringify(data)}\n\n`);
 }
 
+function sendGame(client) {
+	const info = clients.get(client);
+	const id = info.id;
+	const data = {
+		playing: players[game.player] === id,
+		...game,
+	};
+	send(client, "game", data);
+}
+
 app.get("/event", (req, res) => {
 	const id = current++;
 
 	console.log(id, "connect");
 	clients.set(res, {id});
+	if (players[0] === -1) players[0] = id;
+	else if (players[1] === -1) players[1] = id;
+	console.log("playeres", players);
 
 	res.writeHead(200, {
 		"Content-Type": "text/event-stream",
@@ -44,6 +58,8 @@ app.get("/event", (req, res) => {
 
 	req.on("close", () => {
 		console.log(id, "close");
+		if (players[0] === id) players[0] = -1;
+		else if (players[1] === id) players[1] = -1;
 
 		clients.forEach((info, client) => {
 			send(client, "leave", {id});
@@ -54,15 +70,17 @@ app.get("/event", (req, res) => {
 	clients.forEach((info, client) => {
 		if (client === res) return;
 
-		send(client, "enter", {id});
+		sendGame(client, "enter", {id});
 	});
 
-	send(res, "game", game);
+	sendGame(res);
 });
 
-app.put("/move/:x/:y/", (req, res) => {
+app.put("/move/:id/:x/:y/", (req, res) => {
 	const x = req.params.x;
 	const y = req.params.y;
+	const id = +req.params.id;
+	if (players[game.player] !== id) return res.sendStatus(400);
 	moveKnight(x, y);
 	res.sendStatus(200);
 });
@@ -85,7 +103,7 @@ function moveKnight(x, y) {
 	let dx = Math.abs(cx - x);
 	let dy = Math.abs(cy - y);
 
-	if (dx + dy === 3) {
+	if (dx + dy === 3 && dx > 0 && dy > 0) {
 		board[cy][cx] = "";
 		board[y][x] = "K";
 	} else {
@@ -95,9 +113,7 @@ function moveKnight(x, y) {
 	game.turn++;
 	game.player = 1 - game.player;
 
-	clients.forEach((info, client) => {
-		send(client, "game", game);
-	});
+	clients.forEach((info, client) => sendGame(client));
 }
 
 app.listen(port, () => console.log(`on ${port}`));
