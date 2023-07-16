@@ -17,10 +17,10 @@ const game = {
 	board: [
 		["", "", "", "", "", "", ""],
 		["", "K", "", "K", "", "K", ""],
+		["P", "", "P", "", "P", "", "P"],
 		["", "", "", "", "", "", ""],
 		["", "", "", "", "", "", ""],
-		["", "", "", "", "", "", ""],
-		["", "", "", "", "", "", ""],
+		["p", "", "p", "", "p", "", "p"],
 		["", "k", "", "k", "", "k", ""],
 		["", "", "", "", "", "", ""],
 	],
@@ -87,9 +87,15 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 	const yf = req.params.yf;
 	const id = +req.params.id;
 	if (players[game.player] !== id) return res.sendStatus(400);
-	moveKnight(xi, yi, xf, yf);
+
+	move(xi, yi, xf, yf);
 	res.sendStatus(200);
 });
+
+function move(xi, yi, xf, yf) {
+	if (game.board[yi][xi].toLowerCase() === "k") moveKnight(xi, yi, xf, yf);
+	if (game.board[yi][xi].toLowerCase() === "p") movePawn(xi, yi, xf, yf);
+}
 
 function moveKnight(xi, yi, xf, yf) {
 	const player = game.player;
@@ -101,6 +107,28 @@ function moveKnight(xi, yi, xf, yf) {
 	let dy = Math.abs(yf - yi);
 
 	if (dx + dy === 3 && dx > 0 && dy > 0) {
+		board[yf][xf] = board[yi][xi];
+		board[yi][xi] = "";
+	} else {
+		return;
+	}
+
+	game.turn++;
+	game.player = 1 - game.player;
+
+	clients.forEach((info, client) => sendGame(client));
+}
+
+function movePawn(xi, yi, xf, yf) {
+	const player = game.player;
+	const board = game.board;
+	if (player === 0 && board[yi][xi] !== "P") return;
+	if (player === 1 && board[yi][xi] !== "p") return;
+
+	let dx = Math.abs(xf - xi);
+	let dy = Math.abs(yf - yi);
+
+	if (dx + dy === 1) {
 		board[yf][xf] = board[yi][xi];
 		board[yi][xi] = "";
 	} else {
