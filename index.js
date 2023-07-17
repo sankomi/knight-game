@@ -16,12 +16,12 @@ const game = {
 	player: 0,
 	board: [
 		["", "", "", "", "", "", ""],
-		["", "K", "", "K", "", "K", ""],
-		["P", "", "P", "", "P", "", "P"],
+		["", "K1", "", "K2", "", "K3", ""],
+		["P1", "", "P2", "", "P3", "", "P4"],
 		["", "", "", "", "", "", ""],
 		["", "", "", "", "", "", ""],
-		["p", "", "p", "", "p", "", "p"],
-		["", "k", "", "k", "", "k", ""],
+		["p1", "", "p2", "", "p3", "", "p4"],
+		["", "k1", "", "k2", "", "k3", ""],
 		["", "", "", "", "", "", ""],
 	],
 }
@@ -88,57 +88,76 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 	const id = +req.params.id;
 	if (players[game.player] !== id) return res.sendStatus(400);
 
-	move(xi, yi, xf, yf);
-	res.sendStatus(200);
+	const moved = move(xi, yi, xf, yf);
+	if (moved) return res.sendStatus(200);
+	return res.sendStatus(400);
 });
 
 function move(xi, yi, xf, yf) {
-	if (game.board[yi][xi].toLowerCase() === "k") moveKnight(xi, yi, xf, yf);
-	if (game.board[yi][xi].toLowerCase() === "p") movePawn(xi, yi, xf, yf);
+	if (game.board[yi][xi][0].toLowerCase() === "k") return moveKnight(xi, yi, xf, yf);
+	if (game.board[yi][xi][0].toLowerCase() === "p") return movePawn(xi, yi, xf, yf);
 }
 
 function moveKnight(xi, yi, xf, yf) {
 	const player = game.player;
 	const board = game.board;
-	if (player === 0 && board[yi][xi] !== "K") return;
-	if (player === 1 && board[yi][xi] !== "k") return;
+	if (player === 0 && board[yi][xi][0] !== "K") return false;
+	if (player === 1 && board[yi][xi][0] !== "k") return false;
 
 	let dx = Math.abs(xf - xi);
 	let dy = Math.abs(yf - yi);
+
+	const owner = checkOwner(xf, yf);
+	if (player === owner) return false;
 
 	if (dx + dy === 3 && dx > 0 && dy > 0) {
 		board[yf][xf] = board[yi][xi];
 		board[yi][xi] = "";
 	} else {
-		return;
+		return false;
 	}
 
 	game.turn++;
 	game.player = 1 - game.player;
 
 	clients.forEach((info, client) => sendGame(client));
+
+	return true;
 }
 
 function movePawn(xi, yi, xf, yf) {
 	const player = game.player;
 	const board = game.board;
-	if (player === 0 && board[yi][xi] !== "P") return;
-	if (player === 1 && board[yi][xi] !== "p") return;
+	if (player === 0 && board[yi][xi][0] !== "P") return false;
+	if (player === 1 && board[yi][xi][0] !== "p") return false;
 
 	let dx = Math.abs(xf - xi);
 	let dy = Math.abs(yf - yi);
+
+	const owner = checkOwner(xf, yf);
+	if (player === owner) return false;
 
 	if (dx + dy === 1) {
 		board[yf][xf] = board[yi][xi];
 		board[yi][xi] = "";
 	} else {
-		return;
+		return false;
 	}
 
 	game.turn++;
 	game.player = 1 - game.player;
 
 	clients.forEach((info, client) => sendGame(client));
+
+	return true;
+}
+
+function checkOwner(x, y) {
+	const piece = game.board[y][x];
+	if (piece === "") return -1;
+	if (piece === piece.toLowerCase()) return 1;
+	if (piece === piece.toUpperCase()) return 0;
+	return -1;
 }
 
 app.listen(port, () => console.log(`on ${port}`));
