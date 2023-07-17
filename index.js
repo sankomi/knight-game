@@ -26,7 +26,16 @@ const game = {
 	],
 }
 
+function findClient(id) {
+	for ([client, info] of clients.entries()) {
+		if (info.id === id) return client;
+	}
+	return null;
+}
+
 function send(client, event, data) {
+	if (typeof client === "number") client = findClient(client);
+
 	if (!clients.has(client)) return;
 
 	const info = clients.get(client);
@@ -50,9 +59,6 @@ app.get("/event", (req, res) => {
 
 	console.log(id, "connect");
 	clients.set(res, {id});
-	if (players[0] === -1) players[0] = id;
-	else if (players[1] === -1) players[1] = id;
-	console.log("players", players);
 
 	res.writeHead(200, {
 		"Content-Type": "text/event-stream",
@@ -64,6 +70,7 @@ app.get("/event", (req, res) => {
 		console.log(id, "close");
 		if (players[0] === id) players[0] = -1;
 		else if (players[1] === id) players[1] = -1;
+		console.log("players", players);
 
 		clients.forEach((info, client) => {
 			send(client, "leave", {id});
@@ -80,11 +87,28 @@ app.get("/event", (req, res) => {
 	sendGame(res);
 });
 
+app.put("/sit/:id/:side/", (req, res) => {
+	const id = +req.params.id;
+	const side = +req.params.side;
+
+	if (side !== 0 && side !== 1) return res.sendStatus(400);
+	if (players[side] >= 0) return res.sendStatus(400)
+
+	if (players[1 - side] === id) players[1 - side] = -1;
+	players[side] = id;
+	console.log("players", players);
+
+	send(id, "sat", side);
+	clients.forEach((info, client) => sendGame(client));
+
+	res.sendStatus(200);
+});
+
 app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
-	const xi = req.params.xi;
-	const yi = req.params.yi;
-	const xf = req.params.xf;
-	const yf = req.params.yf;
+	const xi = +req.params.xi;
+	const yi = +req.params.yi;
+	const xf = +req.params.xf;
+	const yf = +req.params.yf;
 	const id = +req.params.id;
 	if (players[game.player] !== id) return res.sendStatus(400);
 
@@ -94,8 +118,10 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 });
 
 function move(xi, yi, xf, yf) {
-	if (game.board[yi][xi][0].toLowerCase() === "k") return moveKnight(xi, yi, xf, yf);
-	if (game.board[yi][xi][0].toLowerCase() === "p") return movePawn(xi, yi, xf, yf);
+	const piece = game.board[yi][xi];
+	if (piece === "") return false;
+	if (piece[0].toLowerCase() === "k") return moveKnight(xi, yi, xf, yf);
+	if (piece[0].toLowerCase() === "p") return movePawn(xi, yi, xf, yf);
 }
 
 function moveKnight(xi, yi, xf, yf) {

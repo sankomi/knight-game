@@ -44,12 +44,29 @@ for (let i = 0; i < 56; i++) {
 	});
 }
 
+const upper = document.getElementById("upper");
+const lower = document.getElementById("lower");
+upper.addEventListener("click", event => {
+	const id = window.sessionStorage.getItem("id");
+	fetch(`/sit/${id}/0/`, {method: "PUT"});
+});
+lower.addEventListener("click", event => {
+	const id = window.sessionStorage.getItem("id");
+	fetch(`/sit/${id}/1/`, {method: "PUT"});
+});
+
 ["message", "enter", "leave"].forEach(type => {
 	es.addEventListener(type, event => {
 		const p = document.createElement("p");
 		p.textContent = `${type}: ${event.data}`;
 		out.appendChild(p);
 	});
+});
+
+es.addEventListener("sat", event => {
+	const p = document.createElement("p");
+	p.textContent = `sat  : ${event.data === 0? "uppercase": "lowercase"}`;
+	out.appendChild(p);
 });
 
 es.addEventListener("setid", event => {
@@ -73,7 +90,7 @@ es.addEventListener("game", event => {
 	out.appendChild(p);
 	for (let i = 0; i < board.length; i++) {
 		for (let j = 0; j < board[i].length; j++) {
-			cells[i][j].textContent = board[i][j];
+			cells[i][j].textContent = board[i][j].slice(0, 1);
 		}
 	}
 });
