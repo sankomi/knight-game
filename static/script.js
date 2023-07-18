@@ -55,6 +55,12 @@ lower.addEventListener("click", event => {
 	fetch(`/sit/${id}/1/`, {method: "PUT"});
 });
 
+const end = document.getElementById("end");
+end.addEventListener("click", event => {
+	const id = window.sessionStorage.getItem("id");
+	fetch(`/end/${id}/`, {method: "DELETE"});
+});
+
 ["message", "enter", "leave"].forEach(type => {
 	es.addEventListener(type, event => {
 		const p = document.createElement("p");

@@ -25,6 +25,12 @@ const game = {
 		["", "", "", "", "", "", ""],
 	],
 }
+const PIECES = ["k1", "k2", "k3", "p1", "p2", "p3", "p4"];
+const pieces = [new Map(), new Map()];
+PIECES.forEach(piece => {
+	pieces[0].set(piece.toUpperCase(), 0);
+	pieces[1].set(piece.toLowerCase(), 0);
+});
 
 function findClient(id) {
 	for ([client, info] of clients.entries()) {
@@ -104,6 +110,46 @@ app.put("/sit/:id/:side/", (req, res) => {
 	res.sendStatus(200);
 });
 
+app.delete("/end/:id/", (req, res) => {
+	const id = +req.params.id;
+
+	if (players[game.player] !== id) return res.sendStatus(400);
+
+	pieces[game.player].forEach((state, piece) => {
+		if (state === 0) pieces[game.player].set(piece, 2)
+	});
+
+	for (let i = 0; i < game.board.length; i++) {
+		for (let j = 0; j < game.board[i].length; j++) {
+			const piece = game.board[i][j];
+			if (piece === "") continue;
+			if (piece === piece.toUpperCase()) {
+				if (pieces[0].get(piece) === 2) game.board[i][j] = "";
+			} else if (piece === piece.toLowerCase()) {
+				if (pieces[1].get(piece) === 2) game.board[i][j] = "";
+			}
+		}
+	}
+
+	let counts = [0, 0];
+	PIECES.forEach(piece => {
+		if (pieces[0].get(piece.toUpperCase()) !== 2) counts[0]++;
+		if (pieces[1].get(piece.toLowerCase()) !== 2) counts[1]++;
+	});
+
+	game.turn++;
+	game.player = 1 - game.player;
+
+	pieces[game.player].forEach((state, piece) => {
+		if (state !== 1) return;
+		pieces[game.player].set(piece, 0);
+	});
+
+	clients.forEach((info, client) => sendGame(client));
+
+	res.sendStatus(200);
+});
+
 app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 	const xi = +req.params.xi;
 	const yi = +req.params.yi;
@@ -136,15 +182,19 @@ function moveKnight(xi, yi, xf, yf) {
 	const owner = checkOwner(xf, yf);
 	if (player === owner) return false;
 
+	const piece = board[yi][xi];
+	if (!pieces[player].has(piece)) return false;
+	if (pieces[player].get(piece) !== 0) return false;
+
 	if (dx + dy === 3 && dx > 0 && dy > 0) {
-		board[yf][xf] = board[yi][xi];
+		const removed = board[yf][xf];
+		pieces[1 - player].set(piece, 2);
+		board[yf][xf] = piece;
 		board[yi][xi] = "";
+		pieces[player].set(piece, 1);
 	} else {
 		return false;
 	}
-
-	game.turn++;
-	game.player = 1 - game.player;
 
 	clients.forEach((info, client) => sendGame(client));
 
@@ -163,15 +213,19 @@ function movePawn(xi, yi, xf, yf) {
 	const owner = checkOwner(xf, yf);
 	if (player === owner) return false;
 
+	const piece = board[yi][xi];
+	if (!pieces[player].has(piece)) return false;
+	if (pieces[player].get(piece) === 1) return false;
+
 	if (dx + dy === 1) {
+		const removed = board[yf][xf];
+		pieces[1 - player].set(piece, 2);
 		board[yf][xf] = board[yi][xi];
 		board[yi][xi] = "";
+		pieces[player].set(piece, 1);
 	} else {
 		return false;
 	}
-
-	game.turn++;
-	game.player = 1 - game.player;
 
 	clients.forEach((info, client) => sendGame(client));
 
