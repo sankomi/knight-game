@@ -84,7 +84,10 @@ es.addEventListener("end", event => showMessage(`end  : ${JSON.parse(event.data)
 
 es.addEventListener("sat", event => showMessage(`sat  : ${event.data === 0? "uppercase": "lowercase"}`));
 
-es.addEventListener("setid", event => showMessage(`setid: ${event.data}`));
+es.addEventListener("setid", event => {
+	window.sessionStorage.setItem("id", event.data);
+	showMessage(`setid: ${event.data}`);
+});
 
 es.addEventListener("game", event => {
 	let json;
