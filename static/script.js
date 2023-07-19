@@ -61,26 +61,30 @@ end.addEventListener("click", event => {
 	fetch(`/end/${id}/`, {method: "DELETE"});
 });
 
+const reset = document.getElementById("reset");
+reset.addEventListener("click", event => {
+	fetch(`/reset/`, {method: "DELETE"});
+});
+
+function showMessage(message) {
+	const p = document.createElement("p");
+	p.textContent = message;
+	out.appendChild(p);
+
+	while(out.childElementCount > 5) {
+		out.firstChild.remove();
+	}
+}
+
 ["message", "enter", "leave"].forEach(type => {
-	es.addEventListener(type, event => {
-		const p = document.createElement("p");
-		p.textContent = `${type}: ${event.data}`;
-		out.appendChild(p);
-	});
+	es.addEventListener(type, event => showMessage(`${type}: ${event.data}`));
 });
 
-es.addEventListener("sat", event => {
-	const p = document.createElement("p");
-	p.textContent = `sat  : ${event.data === 0? "uppercase": "lowercase"}`;
-	out.appendChild(p);
-});
+es.addEventListener("end", event => showMessage(`end  : ${JSON.parse(event.data)} win`));
 
-es.addEventListener("setid", event => {
-	const p = document.createElement("p");
-	p.textContent = `setid: ${event.data}`;
-	window.sessionStorage.setItem("id", event.data);
-	out.appendChild(p);
-});
+es.addEventListener("sat", event => showMessage(`sat  : ${event.data === 0? "uppercase": "lowercase"}`));
+
+es.addEventListener("setid", event => showMessage(`setid: ${event.data}`));
 
 es.addEventListener("game", event => {
 	let json;
@@ -91,9 +95,9 @@ es.addEventListener("game", event => {
 		return;
 	}
 	const board = json.board;
-	const p = document.createElement("p");
-	p.textContent = `turn : ${json.player} ${json.player === 0? "uppercase": "lowercase"} ${json.playing? "(you)": ""}`;
-	out.appendChild(p);
+	if (json.player >= 0) {
+		showMessage(`turn : ${json.player === 0? "uppercase": "lowercase"} ${json.playing? "(you)": ""}`);
+	}
 	for (let i = 0; i < board.length; i++) {
 		for (let j = 0; j < board[i].length; j++) {
 			cells[i][j].textContent = board[i][j].slice(0, 1);

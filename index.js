@@ -32,6 +32,26 @@ PIECES.forEach(piece => {
 	pieces[1].set(piece.toLowerCase(), 0);
 });
 
+function reset() {
+	PIECES.forEach(piece => {
+		pieces[0].set(piece.toUpperCase(), 0);
+		pieces[1].set(piece.toLowerCase(), 0);
+	});
+	[players[0], players[1]] = [-1, -1];
+	game.turn = 0;
+	game.player = 0;
+	game.board = [
+		["", "", "", "", "", "", ""],
+		["", "K1", "", "K2", "", "K3", ""],
+		["P1", "", "P2", "", "P3", "", "P4"],
+		["", "", "", "", "", "", ""],
+		["", "", "", "", "", "", ""],
+		["p1", "", "p2", "", "p3", "", "p4"],
+		["", "k1", "", "k2", "", "k3", ""],
+		["", "", "", "", "", "", ""],
+	];
+}
+
 function findClient(id) {
 	for ([client, info] of clients.entries()) {
 		if (info.id === id) return client;
@@ -63,7 +83,6 @@ function sendGame(client) {
 app.get("/event", (req, res) => {
 	const id = current++;
 
-	console.log(id, "connect");
 	clients.set(res, {id});
 
 	res.writeHead(200, {
@@ -73,11 +92,10 @@ app.get("/event", (req, res) => {
 	});
 
 	req.on("close", () => {
-		console.log(id, "close");
 		if (players[0] === id) players[0] = -1;
 		else if (players[1] === id) players[1] = -1;
-		console.log("players", players);
 
+		clients.delete(res);
 		clients.forEach((info, client) => {
 			send(client, "leave", {id});
 		});
@@ -94,6 +112,8 @@ app.get("/event", (req, res) => {
 });
 
 app.put("/sit/:id/:side/", (req, res) => {
+	if (game.player === -1) return res.sendStatus(400);
+
 	const id = +req.params.id;
 	const side = +req.params.side;
 
@@ -102,7 +122,6 @@ app.put("/sit/:id/:side/", (req, res) => {
 
 	if (players[1 - side] === id) players[1 - side] = -1;
 	players[side] = id;
-	console.log("players", players);
 
 	send(id, "sat", side);
 	clients.forEach((info, client) => sendGame(client));
@@ -110,7 +129,17 @@ app.put("/sit/:id/:side/", (req, res) => {
 	res.sendStatus(200);
 });
 
+app.delete("/reset/", (req, res) => {
+	if (game.player !== -1) return res.sendStatus(400);
+
+	reset();
+	clients.forEach((info, client) => sendGame(client));
+	res.sendStatus(200);
+});
+
 app.delete("/end/:id/", (req, res) => {
+	if (game.player === -1) return res.sendStatus(400);
+
 	const id = +req.params.id;
 
 	if (players[game.player] !== id) return res.sendStatus(400);
@@ -137,6 +166,19 @@ app.delete("/end/:id/", (req, res) => {
 		if (pieces[1].get(piece.toLowerCase()) !== 2) counts[1]++;
 	});
 
+	if (counts[0] * counts[1] === 0) {
+		game.player = -1;
+		clients.forEach((info, client) => sendGame(client));
+		if (counts[0] === 0 && counts[1] === 0) {
+			clients.forEach((info, client) => send(client, "end", "draw"));
+		} else if (counts[0] === 0) {
+			clients.forEach((info, client) => send(client, "end", "lowercase"));
+		} else if (counts[1] === 0) {
+			clients.forEach((info, client) => send(client, "end", "uppercase"));
+		}
+		return res.sendStatus(200);
+	}
+
 	game.turn++;
 	game.player = 1 - game.player;
 
@@ -151,6 +193,8 @@ app.delete("/end/:id/", (req, res) => {
 });
 
 app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
+	if (game.player === -1) return res.sendStatus(400);
+
 	const xi = +req.params.xi;
 	const yi = +req.params.yi;
 	const xf = +req.params.xf;
@@ -188,7 +232,7 @@ function moveKnight(xi, yi, xf, yf) {
 
 	if (dx + dy === 3 && dx > 0 && dy > 0) {
 		const removed = board[yf][xf];
-		pieces[1 - player].set(piece, 2);
+		pieces[1 - player].set(player === 0? removed.toLowerCase(): removed.toUpperCase(), 2);
 		board[yf][xf] = piece;
 		board[yi][xi] = "";
 		pieces[player].set(piece, 1);
@@ -219,7 +263,7 @@ function movePawn(xi, yi, xf, yf) {
 
 	if (dx + dy === 1) {
 		const removed = board[yf][xf];
-		pieces[1 - player].set(piece, 2);
+		pieces[1 - player].set(player === 0? removed.toLowerCase(): removed.toUpperCase(), 2);
 		board[yf][xf] = board[yi][xi];
 		board[yi][xi] = "";
 		pieces[player].set(piece, 1);
