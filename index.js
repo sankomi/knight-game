@@ -14,6 +14,7 @@ const players = [-1, -1];
 const game = {
 	turn: 0,
 	player: 0,
+	users: [null, null],
 	board: [
 		["", "", "", "", "", "", ""],
 		["", "K1", "", "K2", "", "K3", ""],
@@ -40,6 +41,7 @@ function reset() {
 	[players[0], players[1]] = [-1, -1];
 	game.turn = 0;
 	game.player = 0;
+	game.users = [null, null];
 	game.board = [
 		["", "", "", "", "", "", ""],
 		["", "K1", "", "K2", "", "K3", ""],
@@ -80,10 +82,11 @@ function sendGame(client) {
 	send(client, "game", data);
 }
 
-app.get("/event", (req, res) => {
+app.get("/event/:name/", (req, res) => {
+	const name = req.params.name;
 	const id = current++;
 
-	clients.set(res, {id});
+	clients.set(res, {name, id});
 
 	res.writeHead(200, {
 		"Content-Type": "text/event-stream",
@@ -92,12 +95,18 @@ app.get("/event", (req, res) => {
 	});
 
 	req.on("close", () => {
-		if (players[0] === id) players[0] = -1;
-		else if (players[1] === id) players[1] = -1;
+		if (players[0] === id) {
+			players[0] = -1;
+			game.users[0] = null;
+		} else if (players[1] === id) {
+			players[1] = -1;
+			game.users[1] = null;
+		}
 
 		clients.delete(res);
 		clients.forEach((info, client) => {
-			send(client, "leave", {id});
+			send(client, "leave", {name});
+			sendGame(client);
 		});
 	});
 
@@ -105,7 +114,7 @@ app.get("/event", (req, res) => {
 	clients.forEach((info, client) => {
 		if (client === res) return;
 
-		sendGame(client, "enter", {id});
+		sendGame(client, "enter", {name});
 	});
 
 	sendGame(res);
@@ -120,8 +129,16 @@ app.put("/sit/:id/:side/", (req, res) => {
 	if (side !== 0 && side !== 1) return res.sendStatus(400);
 	if (players[side] >= 0) return res.sendStatus(400)
 
-	if (players[1 - side] === id) players[1 - side] = -1;
+	if (players[1 - side] === id) {
+		players[1 - side] = -1;
+		game.users[1 - side] = null;
+	}
 	players[side] = id;
+
+	clients.forEach((info, client) => {
+		if (info.id !== id) return;
+		game.users[side] = info.name;
+	});
 
 	send(id, "sat", side);
 	clients.forEach((info, client) => sendGame(client));
@@ -263,6 +280,7 @@ function movePawn(xi, yi, xf, yf) {
 
 	if (dx + dy === 1) {
 		const removed = board[yf][xf];
+		console.log(player === 0? removed.toLowerCase(): removed.toUpperCase());
 		pieces[1 - player].set(player === 0? removed.toLowerCase(): removed.toUpperCase(), 2);
 		board[yf][xf] = board[yi][xi];
 		board[yi][xi] = "";

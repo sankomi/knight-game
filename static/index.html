@@ -10,15 +10,25 @@
 		<script src="script.js" defer></script>
 	</head>
 	<body>
-		<div id="game"></div>
-		<div>
-			<button id="upper">uppercase</button>
-			<button id="lower">lowercase</button>
+		<div id="login">
+			<input id="username">
+			<button id="enter">enter</button>
 		</div>
-		<div>
-			<button id="end">end turn</button>
-			<button id="reset">reset</button>
+		<div id="room" style="display: none;">
+			<div id="game"></div>
+			<div>
+				<button id="upper">uppercase</button>
+				<span id="upperuser"></span>
+			</div>
+			<div>
+				<button id="lower">lowercase</button>
+				<span id="loweruser"></span>
+			</div>
+			<div>
+				<button id="end">end turn</button>
+				<button id="reset">reset</button>
+			</div>
+			<div id="out"></div>
 		</div>
-		<div id="out"></div>
 	</body>
 </html>
