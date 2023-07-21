@@ -25,6 +25,7 @@ const game = {
 		["", "k1", "", "k2", "", "k3", ""],
 		["", "", "", "", "", "", ""],
 	],
+	movable: ["K1", "K2", "K3", "P1", "P2", "P3", "P4"],
 }
 const PIECES = ["k1", "k2", "k3", "p1", "p2", "p3", "p4"];
 const pieces = [new Map(), new Map()];
@@ -52,6 +53,7 @@ function reset() {
 		["", "k1", "", "k2", "", "k3", ""],
 		["", "", "", "", "", "", ""],
 	];
+	game.movable = ["K1", "K2", "K3", "P1", "P2", "P3", "P4"];
 }
 
 function findClient(id) {
@@ -178,9 +180,13 @@ app.delete("/end/:id/", (req, res) => {
 	}
 
 	let counts = [0, 0];
+	game.movable.length = 0;
 	PIECES.forEach(piece => {
 		if (pieces[0].get(piece.toUpperCase()) !== 2) counts[0]++;
 		if (pieces[1].get(piece.toLowerCase()) !== 2) counts[1]++;
+
+		const sidepiece = game.player === 0? piece.toLowerCase(): piece.toUpperCase();
+		if (pieces[1 - game.player].get(sidepiece) !== 2) game.movable.push(sidepiece);
 	});
 
 	if (counts[0] * counts[1] === 0) {
@@ -193,6 +199,7 @@ app.delete("/end/:id/", (req, res) => {
 		} else if (counts[1] === 0) {
 			clients.forEach((info, client) => send(client, "end", "uppercase"));
 		}
+		game.movable = [];
 		return res.sendStatus(200);
 	}
 
@@ -227,8 +234,25 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 function move(xi, yi, xf, yf) {
 	const piece = game.board[yi][xi];
 	if (piece === "") return false;
-	if (piece[0].toLowerCase() === "k") return moveKnight(xi, yi, xf, yf);
-	if (piece[0].toLowerCase() === "p") return movePawn(xi, yi, xf, yf);
+	const index = game.movable.indexOf(piece);
+	if (~index) {
+		if (piece[0].toLowerCase() === "k") {
+			if (moveKnight(xi, yi, xf, yf)) {
+				game.movable.splice(index, 1);
+				return true;
+			} else {
+				return false;
+			}
+		}
+		if (piece[0].toLowerCase() === "p") {
+			if (movePawn(xi, yi, xf, yf)) {
+				game.movable.splice(index, 1);
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
 }
 
 function moveKnight(xi, yi, xf, yf) {
