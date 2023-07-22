@@ -7,7 +7,6 @@ const port = process.env.PORT || 3000;
 const path = require("path");
 app.use(express.static(path.join(__dirname, "static")));
 
-let current = 0;
 const clients = new Map();
 
 const players = [-1, -1];
@@ -86,7 +85,7 @@ function sendGame(client) {
 
 app.get("/event/:name/", (req, res) => {
 	const name = req.params.name;
-	const id = current++;
+	const id = String(Date.now() + String(Math.floor(Math.random() * 1000000)).padStart(6, "0"));
 
 	clients.set(res, {name, id});
 
@@ -125,7 +124,7 @@ app.get("/event/:name/", (req, res) => {
 app.put("/sit/:id/:side/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
-	const id = +req.params.id;
+	const id = req.params.id;
 	const side = +req.params.side;
 
 	if (side !== 0 && side !== 1) return res.sendStatus(400);
@@ -159,7 +158,7 @@ app.delete("/reset/", (req, res) => {
 app.delete("/end/:id/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
-	const id = +req.params.id;
+	const id = req.params.id;
 
 	if (players[game.player] !== id) return res.sendStatus(400);
 
@@ -223,7 +222,7 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 	const yi = +req.params.yi;
 	const xf = +req.params.xf;
 	const yf = +req.params.yf;
-	const id = +req.params.id;
+	const id = req.params.id;
 	if (players[game.player] !== id) return res.sendStatus(400);
 
 	const moved = move(xi, yi, xf, yf);

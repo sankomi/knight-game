@@ -160,7 +160,8 @@ function start(name) {
 	es.addEventListener("sat", event => showMessage(`sat  : ${event.data === 0? "uppercase": "lowercase"}`));
 
 	es.addEventListener("setid", event => {
-		window.sessionStorage.setItem("id", event.data);
+		const id = JSON.parse(event.data);
+		window.sessionStorage.setItem("id", id);
 		showMessage(`setid: ${event.data}`);
 	});
 
