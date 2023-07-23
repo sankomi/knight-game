@@ -226,7 +226,11 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 	if (players[game.player] !== id) return res.sendStatus(400);
 
 	const moved = move(xi, yi, xf, yf);
-	if (moved) return res.sendStatus(200);
+	if (moved) {
+		res.sendStatus(200);
+		clients.forEach((info, client) => sendGame(client));
+		return;
+	}
 	return res.sendStatus(400);
 });
 
@@ -280,8 +284,6 @@ function moveKnight(xi, yi, xf, yf) {
 		return false;
 	}
 
-	clients.forEach((info, client) => sendGame(client));
-
 	return true;
 }
 
@@ -303,7 +305,6 @@ function movePawn(xi, yi, xf, yf) {
 
 	if (dx + dy === 1) {
 		const removed = board[yf][xf];
-		console.log(player === 0? removed.toLowerCase(): removed.toUpperCase());
 		pieces[1 - player].set(player === 0? removed.toLowerCase(): removed.toUpperCase(), 2);
 		board[yf][xf] = board[yi][xi];
 		board[yi][xi] = "";
@@ -311,8 +312,6 @@ function movePawn(xi, yi, xf, yf) {
 	} else {
 		return false;
 	}
-
-	clients.forEach((info, client) => sendGame(client));
 
 	return true;
 }

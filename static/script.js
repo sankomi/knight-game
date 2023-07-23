@@ -23,6 +23,9 @@ function start(name) {
 			color: white !important;
 			background: #4a4 !important;
 		}
+		.notmovable {
+			color: #888 !important;
+		}
 	`;
 	document.head.appendChild(style);
 
@@ -33,6 +36,7 @@ function start(name) {
 	let div;
 	const FROM = 0;
 	const TO = 1;
+	let playing = false;
 	let status = FROM;
 	let from = [0, 0];
 	let movable = [];
@@ -63,25 +67,31 @@ function start(name) {
 		const x = i % 7;
 		const y = Math.floor(i / 7);
 		span.addEventListener("click", event => {
+			if (!playing) return;
 			if (status === FROM) {
 				if (~movable.indexOf(cells[y][x].piece)) {
 					from = [x, y];
 					select(x, y);
 					status = TO;
-					if (cells[y][x].textContent.toLowerCase() === "p") {
-						move(x - 1, y);
-						move(x + 1, y);
-						move(x, y - 1);
-						move(x, y + 1);
-					} else if (cells[y][x].textContent.toLowerCase() === "k") {
-						move(x - 1, y + 2);
-						move(x - 1, y - 2);
-						move(x + 1, y + 2);
-						move(x + 1, y - 2);
-						move(x + 2, y - 1);
-						move(x - 2, y - 1);
-						move(x + 2, y + 1);
-						move(x - 2, y + 1);
+					const piece = cells[y][x].textContent;
+					let side;
+					if (!piece) side = -1;
+					else if (piece.toUpperCase() === piece) side = 0;
+					else if (piece.toLowerCase() === piece) side = 1;
+					if (piece.toLowerCase() === "p") {
+						move(x - 1, y, side);
+						move(x + 1, y, side);
+						move(x, y - 1, side);
+						move(x, y + 1, side);
+					} else if (piece.toLowerCase() === "k") {
+						move(x - 1, y + 2, side);
+						move(x - 1, y - 2, side);
+						move(x + 1, y + 2, side);
+						move(x + 1, y - 2, side);
+						move(x + 2, y - 1, side);
+						move(x - 2, y - 1, side);
+						move(x + 2, y + 1, side);
+						move(x - 2, y + 1, side);
 					}
 				}
 			} else if (status === TO) {
@@ -100,16 +110,22 @@ function start(name) {
 		coloured.push(cells[y][x]);
 	}
 
-	function move(x, y) {
+	function move(x, y, side) {
 		if (y < 0 || y >= cells.length) return;
 		if (x < 0 || x >= cells[y].length) return;
+		const target = cells[y][x].textContent;
+		if (target) {
+			if (target.toUpperCase() === target && side === 0) return;
+			else if (target.toLowerCase() === target && side === 1) return;
+		}
 		cells[y][x].classList.add("move");
 		coloured.push(cells[y][x]);
 	}
 
 	function clear() {
 		coloured.forEach(cell => {
-			cell.classList.remove(...cell.classList);
+			cell.classList.remove("select");
+			cell.classList.remove("move");
 		});
 		coloured.length = 0;
 	}
@@ -179,6 +195,7 @@ function start(name) {
 		upperuser.textContent = json.users[0] || "(empty)";
 		loweruser.textContent = json.users[1] || "(empty)";
 		movable = json.movable;
+		playing = json.playing;
 		const board = json.board;
 		switch (json.player) {
 			case 0:
@@ -197,6 +214,10 @@ function start(name) {
 			for (let j = 0; j < board[i].length; j++) {
 				cells[i][j].piece = board[i][j];
 				cells[i][j].textContent = board[i][j].slice(0, 1);
+				cells[i][j].classList.remove("notmovable");
+				if (playing && !~movable.indexOf(cells[i][j].piece)) {
+					cells[i][j].classList.add("notmovable");
+				}
 			}
 		}
 	});
