@@ -109,10 +109,13 @@ function start(name) {
 						move(x + 2, y + 1, side);
 						move(x - 2, y + 1, side);
 					}
+				} else if (cells[y][x].textContent === "") {
+					const id = window.sessionStorage.getItem("id");
+					fetch(`/block/${id}/${x}/${y}/`, {method: "PUT"});
 				}
 			} else if (status === TO) {
 				const id = window.sessionStorage.getItem("id");
-				fetch(`/move/${id}/${from[0]}/${from[1]}/${x}/${y}`, {method: "PUT"});
+				fetch(`/move/${id}/${from[0]}/${from[1]}/${x}/${y}/`, {method: "PUT"});
 				clear();
 				status = FROM;
 			}

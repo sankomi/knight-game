@@ -13,6 +13,7 @@ const players = [-1, -1];
 let game = {
 	turn: 0,
 	player: 0,
+	moved: 0,
 	users: [null, null],
 	board: [
 		["", "", "", "", "", "", ""],
@@ -42,6 +43,7 @@ function reset() {
 	[players[0], players[1]] = [-1, -1];
 	game.turn = 0;
 	game.player = 0;
+	game.moved = 0;
 	game.users = [null, null];
 	game.board = [
 		["", "", "", "", "", "", ""],
@@ -202,6 +204,7 @@ app.delete("/end/:id/", (req, res) => {
 
 	game.turn++;
 	game.player = 1 - game.player;
+	game.moved = 0;
 
 	back = clone(game);
 
@@ -237,6 +240,27 @@ app.delete("/rollback/:id/", (req, res) => {
 	res.sendStatus(200);
 });
 
+app.put("/block/:id/:x/:y/", (req, res) => {
+	if (game.player === -1) return res.sendStatus(400);
+
+	const id = req.params.id;
+	const x = +req.params.x;
+	const y = +req.params.y;
+	if (players[game.player] !== id) return res.sendStatus(400);
+	if (game.moved !== 0) return res.sendStatus(400);
+	if (game.board[y][x] !== "") return res.sendStatus(400);
+
+	game.board[y][x] = "*";
+	game.moved = Infinity;
+	pieces[game.player].forEach((state, piece) => {
+		if (state === 0) pieces[game.player].set(piece, 1)
+	});
+
+	clients.forEach((info, client) => sendGame(client));
+
+	res.sendStatus(200);
+});
+
 app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
@@ -246,12 +270,13 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 	const yf = +req.params.yf;
 	const id = req.params.id;
 	if (players[game.player] !== id) return res.sendStatus(400);
+	if (game.moved === Infinity) return res.sendStatus(400);
 
 	const moved = move(xi, yi, xf, yf);
 	if (moved) {
-		res.sendStatus(200);
+		game.moved += 1;
 		clients.forEach((info, client) => sendGame(client));
-		return;
+		return res.sendStatus(200);
 	}
 	return res.sendStatus(400);
 });
@@ -259,6 +284,7 @@ app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
 function move(xi, yi, xf, yf) {
 	const piece = game.board[yi][xi];
 	if (piece === "") return false;
+	if (game.board[yf][xf] === "*") return false;
 	const index = game.movable.indexOf(piece);
 	if (~index) {
 		if (piece[0].toLowerCase() === "k") {
