@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, "static")));
 const clients = new Map();
 
 const players = [-1, -1];
-const game = {
+let game = {
 	turn: 0,
 	player: 0,
 	users: [null, null],
@@ -25,7 +25,8 @@ const game = {
 		["", "", "", "", "", "", ""],
 	],
 	movable: ["K1", "K2", "K3", "P1", "P2", "P3", "P4"],
-}
+};
+let back = clone(game);
 const PIECES = ["k1", "k2", "k3", "p1", "p2", "p3", "p4"];
 const pieces = [new Map(), new Map()];
 PIECES.forEach(piece => {
@@ -183,9 +184,6 @@ app.delete("/end/:id/", (req, res) => {
 	PIECES.forEach(piece => {
 		if (pieces[0].get(piece.toUpperCase()) !== 2) counts[0]++;
 		if (pieces[1].get(piece.toLowerCase()) !== 2) counts[1]++;
-
-		const sidepiece = game.player === 0? piece.toLowerCase(): piece.toUpperCase();
-		if (pieces[1 - game.player].get(sidepiece) !== 2) game.movable.push(sidepiece);
 	});
 
 	if (counts[0] * counts[1] === 0) {
@@ -198,16 +196,40 @@ app.delete("/end/:id/", (req, res) => {
 		} else if (counts[1] === 0) {
 			clients.forEach((info, client) => send(client, "end", "uppercase"));
 		}
-		game.movable = [];
+		game.movable.length = 0;
 		return res.sendStatus(200);
 	}
 
 	game.turn++;
 	game.player = 1 - game.player;
 
+	back = clone(game);
+
 	pieces[game.player].forEach((state, piece) => {
 		if (state !== 1) return;
 		pieces[game.player].set(piece, 0);
+		game.movable.push(piece);
+	});
+
+	clients.forEach((info, client) => sendGame(client));
+
+	res.sendStatus(200);
+});
+
+app.delete("/rollback/:id/", (req, res) => {
+	if (game.player === -1) return res.sendStatus(400);
+
+	const id = req.params.id;
+	if (players[game.player] !== id) return res.sendStatus(400);
+
+	const users = game.users;
+	game = clone(back);
+	game.users = users;
+
+	game.movable.length = 0;
+	pieces[game.player].forEach((state, piece) => {
+		pieces[game.player].set(piece, 0);
+		game.movable.push(piece);
 	});
 
 	clients.forEach((info, client) => sendGame(client));
@@ -322,6 +344,10 @@ function checkOwner(x, y) {
 	if (piece === piece.toLowerCase()) return 1;
 	if (piece === piece.toUpperCase()) return 0;
 	return -1;
+}
+
+function clone(object) {
+	return JSON.parse(JSON.stringify(object));
 }
 
 app.listen(port, () => console.log(`on ${port}`));

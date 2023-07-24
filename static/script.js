@@ -15,6 +15,28 @@ enter.addEventListener("click", event => {
 function start(name) {
 	const style = document.createElement("style");
 	style.innerHTML = `
+		.cell {
+			display: inline-block;
+			width: 2rem;
+			height: 2rem;
+			line-height: 2rem;
+			text-align: center;
+			cursor: pointer;
+		}
+		.cell--black {
+			color: white;
+			background: black;
+		}
+		.cell--black:hover {
+			background: #333;
+		}
+		.cell--white {
+			color: black;
+			background: #eee;
+		}
+		.cell--white:hover {
+			background: #bbb;
+		}
 		.select {
 			color:white !important;
 			background:#a44 !important;
@@ -43,17 +65,11 @@ function start(name) {
 	let coloured = [];
 	for (let i = 0; i < 56; i++) {
 		const span = document.createElement("span");
-		span.style.display = "inline-block";
-		span.style.width = "2rem";
-		span.style.height = "2rem";
-		span.style.lineHeight = "2rem";
-		span.style.textAlign = "center";
+		span.classList.add("cell");
 		if (i % 2 === 0) {
-			span.style.background = "black";
-			span.style.color = "white";
+			span.classList.add("cell--black");
 		} else {
-			span.style.background = "#eee";
-			span.style.color = "black";
+			span.classList.add("cell--white");
 		}
 		if (i % 7 === 0) {
 			cells.push([]);
@@ -143,7 +159,7 @@ function start(name) {
 
 	const end = document.getElementById("end");
 	end.addEventListener("click", event => {
-		cells[from[1]][from[0]].classList.remove("select");
+		clear();
 		const id = window.sessionStorage.getItem("id");
 		fetch(`/end/${id}/`, {method: "DELETE"});
 	});
@@ -151,6 +167,12 @@ function start(name) {
 	const reset = document.getElementById("reset");
 	reset.addEventListener("click", event => {
 		fetch(`/reset/`, {method: "DELETE"});
+	});
+
+	const rollback = document.getElementById("rollback");
+	rollback.addEventListener("click", event => {
+		const id = window.sessionStorage.getItem("id");
+		fetch(`/rollback/${id}/`, {method: "DELETE"});
 	});
 
 	function showMessage(message) {
