@@ -182,7 +182,6 @@ app.delete("/end/:id/", (req, res) => {
 	}
 
 	let counts = [0, 0];
-	game.movable.length = 0;
 	PIECES.forEach(piece => {
 		if (pieces[0].get(piece.toUpperCase()) !== 2) counts[0]++;
 		if (pieces[1].get(piece.toLowerCase()) !== 2) counts[1]++;
@@ -208,8 +207,9 @@ app.delete("/end/:id/", (req, res) => {
 
 	back = clone(game);
 
+	game.movable.length = 0;
 	pieces[game.player].forEach((state, piece) => {
-		if (state !== 1) return;
+		if (state !== 0 && state !== 1) return;
 		pieces[game.player].set(piece, 0);
 		game.movable.push(piece);
 	});
@@ -252,6 +252,7 @@ app.put("/block/:id/:x/:y/", (req, res) => {
 
 	game.board[y][x] = "*";
 	game.moved = Infinity;
+	game.movable.length = 0;
 	pieces[game.player].forEach((state, piece) => {
 		if (state === 0) pieces[game.player].set(piece, 1)
 	});
