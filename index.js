@@ -316,8 +316,17 @@ function moveKnight(xi, yi, xf, yf) {
 	let dx = Math.abs(xf - xi);
 	let dy = Math.abs(yf - yi);
 
-	const owner = checkOwner(xf, yf);
-	if (player === owner) return false;
+	if (player === checkOwner(xf, yf)) return false;
+
+	if (xf === xi + 2) {
+		if (checkOwner(xi + 1, yi, player) !== player) return false;
+	} else if (xf === xi - 2) {
+		if (checkOwner(xi - 1, yi, player) !== player) return false;
+	} else if (yf === yi + 2) {
+		if (checkOwner(xi, yi + 1, player) !== player) return false;
+	} else if (yf === yi - 2) {
+		if (checkOwner(xi, yi - 1, player) !== player) return false;
+	}
 
 	const piece = board[yi][xi];
 	if (!pieces[player].has(piece)) return false;
@@ -345,8 +354,7 @@ function movePawn(xi, yi, xf, yf) {
 	let dx = Math.abs(xf - xi);
 	let dy = Math.abs(yf - yi);
 
-	const owner = checkOwner(xf, yf);
-	if (player === owner) return false;
+	if (player === checkOwner(xf, yf)) return false;
 
 	const piece = board[yi][xi];
 	if (!pieces[player].has(piece)) return false;
@@ -365,12 +373,13 @@ function movePawn(xi, yi, xf, yf) {
 	return true;
 }
 
-function checkOwner(x, y) {
+function checkOwner(x, y, player = -1) {
 	const piece = game.board[y][x];
-	if (piece === "") return -1;
+	if (piece === "") return player;
+	if (piece === "*") return 2;
 	if (piece === piece.toLowerCase()) return 1;
 	if (piece === piece.toUpperCase()) return 0;
-	return -1;
+	return player;
 }
 
 function clone(object) {
