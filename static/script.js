@@ -95,19 +95,19 @@ function start(name) {
 					else if (piece.toUpperCase() === piece) side = 0;
 					else if (piece.toLowerCase() === piece) side = 1;
 					if (piece.toLowerCase() === "p") {
-						move(x - 1, y, side);
-						move(x + 1, y, side);
-						move(x, y - 1, side);
-						move(x, y + 1, side);
+						move(x, y, -1,  0, side);
+						move(x, y,  1,  0, side);
+						move(x, y,  0, -1, side);
+						move(x, y,  0,  1, side);
 					} else if (piece.toLowerCase() === "k") {
-						move(x - 1, y + 2, side);
-						move(x - 1, y - 2, side);
-						move(x + 1, y + 2, side);
-						move(x + 1, y - 2, side);
-						move(x + 2, y - 1, side);
-						move(x - 2, y - 1, side);
-						move(x + 2, y + 1, side);
-						move(x - 2, y + 1, side);
+						move(x, y, -1,  2, side, true);
+						move(x, y, -1, -2, side, true);
+						move(x, y,  1,  2, side, true);
+						move(x, y,  1, -2, side, true);
+						move(x, y,  2, -1, side, true);
+						move(x, y, -2, -1, side, true);
+						move(x, y,  2,  1, side, true);
+						move(x, y, -2,  1, side, true);
 					}
 				} else if (cells[y][x].textContent === "") {
 					const id = window.sessionStorage.getItem("id");
@@ -129,16 +129,31 @@ function start(name) {
 		coloured.push(cells[y][x]);
 	}
 
-	function move(x, y, side) {
-		if (y < 0 || y >= cells.length) return;
-		if (x < 0 || x >= cells[y].length) return;
-		const target = cells[y][x].textContent;
+	function move(x, y, dx, dy, side, knight = false) {
+		if (y + dy < 0 || y + dy >= cells.length) return;
+		if (x + dx < 0 || x + dx >= cells[y + dy].length) return;
+
+		if (knight) {
+			let block = null;
+			if (dx === 2) block = cells[y][x + 1].textContent;
+			else if(dx === -2) block = cells[y][x - 1].textContent;
+			else if (dy === 2) block = cells[y + 1][x].textContent;
+			else if (dy === -2) block = cells[y - 1][x].textContent;
+
+			if (block) {
+				if (block === "*") return;
+				else if (block.toUpperCase() === block && side === 1) return;
+				else if (block.toLowerCase() === block && side === 0) return;
+			}
+		}
+
+		const target = cells[y + dy][x + dx].textContent;
 		if (target) {
 			if (target.toUpperCase() === target && side === 0) return;
 			else if (target.toLowerCase() === target && side === 1) return;
 		}
-		cells[y][x].classList.add("move");
-		coloured.push(cells[y][x]);
+		cells[y + dy][x + dx].classList.add("move");
+		coloured.push(cells[y + dy][x + dx]);
 	}
 
 	function clear() {
