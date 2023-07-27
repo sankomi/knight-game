@@ -86,6 +86,16 @@ function sendGame(client) {
 	send(client, "game", data);
 }
 
+function sendUsers() {
+	const names = [];
+	clients.forEach((info, client) => {
+		names.push(info.name);
+	});
+	clients.forEach((info, client) => {
+		send(client, "users", names);
+	});
+}
+
 app.get("/event/:name/", (req, res) => {
 	const name = req.params.name;
 	const id = String(Date.now() + String(Math.floor(Math.random() * 1000000)).padStart(6, "0"));
@@ -112,6 +122,7 @@ app.get("/event/:name/", (req, res) => {
 			send(client, "leave", {name});
 			sendGame(client);
 		});
+		sendUsers();
 	});
 
 	send(res, "setid", id);
@@ -122,6 +133,7 @@ app.get("/event/:name/", (req, res) => {
 	});
 
 	sendGame(res);
+	sendUsers();
 });
 
 setInterval(() => {

@@ -54,6 +54,7 @@ function start(name) {
 	const es = new EventSource(`/event/${name}/`);
 	const out = document.getElementById("out");
 	const game = document.getElementById("game");
+	const users = document.getElementById("users");
 	const cells = [];
 	let div;
 	const FROM = 0;
@@ -206,6 +207,23 @@ function start(name) {
 
 	["message", "enter", "leave", "ping"].forEach(type => {
 		es.addEventListener(type, event => showMessage(`${type}: ${event.data}`));
+	});
+
+	es.addEventListener("users", event => {
+		let json;
+		try {
+			json = JSON.parse(event.data);
+		} catch (err) {
+			console.error(err);
+			return;
+		}
+
+		users.innerHTML = null;
+		json.forEach(user => {
+			const div = document.createElement("div");
+			div.textContent = user;
+			users.appendChild(div);
+		});
 	});
 
 	es.addEventListener("end", event => {
