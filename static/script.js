@@ -204,7 +204,7 @@ function start(name) {
 		} */
 	}
 
-	["message", "enter", "leave"].forEach(type => {
+	["message", "enter", "leave", "ping"].forEach(type => {
 		es.addEventListener(type, event => showMessage(`${type}: ${event.data}`));
 	});
 

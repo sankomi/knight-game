@@ -124,6 +124,12 @@ app.get("/event/:name/", (req, res) => {
 	sendGame(res);
 });
 
+setInterval(() => {
+	clients.forEach((info, client) => {
+		send(client, "ping", 1);
+	});
+}, 1000);
+
 app.put("/sit/:id/:side/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
