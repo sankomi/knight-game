@@ -112,11 +112,17 @@ function start(name) {
 					}
 				} else if (cells[y][x].textContent === "") {
 					const id = window.sessionStorage.getItem("id");
-					fetch(`/block/${id}/${x}/${y}/`, {method: "PUT"});
+					fetch(`/block/${x}/${y}/`, {
+						method: "PUT",
+						headers: {id},
+					});
 				}
 			} else if (status === TO) {
 				const id = window.sessionStorage.getItem("id");
-				fetch(`/move/${id}/${from[0]}/${from[1]}/${x}/${y}/`, {method: "PUT"});
+				fetch(`/move/${from[0]}/${from[1]}/${x}/${y}/`, {
+					method: "PUT",
+					headers: {id},
+				});
 				clear();
 				status = FROM;
 			}
@@ -169,18 +175,27 @@ function start(name) {
 	const lower = document.getElementById("lower");
 	upper.addEventListener("click", event => {
 		const id = window.sessionStorage.getItem("id");
-		fetch(`/sit/${id}/0/`, {method: "PUT"});
+		fetch(`/sit/0/`, {
+			method: "PUT",
+			headers: {id},
+		});
 	});
 	lower.addEventListener("click", event => {
 		const id = window.sessionStorage.getItem("id");
-		fetch(`/sit/${id}/1/`, {method: "PUT"});
+		fetch(`/sit/1/`, {
+			method: "PUT",
+			headers: {id},
+		});
 	});
 
 	const end = document.getElementById("end");
 	end.addEventListener("click", event => {
 		clear();
 		const id = window.sessionStorage.getItem("id");
-		fetch(`/end/${id}/`, {method: "DELETE"});
+		fetch(`/end/`, {
+			method: "DELETE",
+			headers: {id},
+		});
 	});
 
 	const reset = document.getElementById("reset");
@@ -191,7 +206,10 @@ function start(name) {
 	const rollback = document.getElementById("rollback");
 	rollback.addEventListener("click", event => {
 		const id = window.sessionStorage.getItem("id");
-		fetch(`/rollback/${id}/`, {method: "DELETE"});
+		fetch(`/rollback/`, {
+			method: "DELETE",
+			headers: {id},
+		});
 	});
 
 	function showMessage(message) {

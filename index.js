@@ -142,10 +142,10 @@ setInterval(() => {
 	});
 }, 1000);
 
-app.put("/sit/:id/:side/", (req, res) => {
+app.put("/sit/:side/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
-	const id = req.params.id;
+	const id = req.headers["id"];
 	const side = +req.params.side;
 
 	if (side !== 0 && side !== 1) return res.sendStatus(400);
@@ -176,10 +176,10 @@ app.delete("/reset/", (req, res) => {
 	res.sendStatus(200);
 });
 
-app.delete("/end/:id/", (req, res) => {
+app.delete("/end/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
-	const id = req.params.id;
+	const id = req.headers["id"];
 
 	if (players[game.player] !== id) return res.sendStatus(400);
 
@@ -237,10 +237,10 @@ app.delete("/end/:id/", (req, res) => {
 	res.sendStatus(200);
 });
 
-app.delete("/rollback/:id/", (req, res) => {
+app.delete("/rollback/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
-	const id = req.params.id;
+	const id = req.headers["id"];
 	if (players[game.player] !== id) return res.sendStatus(400);
 
 	const users = game.users;
@@ -258,10 +258,10 @@ app.delete("/rollback/:id/", (req, res) => {
 	res.sendStatus(200);
 });
 
-app.put("/block/:id/:x/:y/", (req, res) => {
+app.put("/block/:x/:y/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
-	const id = req.params.id;
+	const id = req.headers["id"];
 	const x = +req.params.x;
 	const y = +req.params.y;
 	if (players[game.player] !== id) return res.sendStatus(400);
@@ -280,14 +280,14 @@ app.put("/block/:id/:x/:y/", (req, res) => {
 	res.sendStatus(200);
 });
 
-app.put("/move/:id/:xi/:yi/:xf/:yf/", (req, res) => {
+app.put("/move/:xi/:yi/:xf/:yf/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
 	const xi = +req.params.xi;
 	const yi = +req.params.yi;
 	const xf = +req.params.xf;
 	const yf = +req.params.yf;
-	const id = req.params.id;
+	const id = req.headers["id"];
 	if (players[game.player] !== id) return res.sendStatus(400);
 	if (game.moved === Infinity) return res.sendStatus(400);
 
