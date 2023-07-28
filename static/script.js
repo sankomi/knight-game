@@ -51,7 +51,7 @@ function start(name) {
 	`;
 	document.head.appendChild(style);
 
-	const es = new EventSource(`/event/${name}/`);
+	const es = new EventSource(`/event/?name=${name}`);
 	const out = document.getElementById("out");
 	const game = document.getElementById("game");
 	const users = document.getElementById("users");
@@ -112,16 +112,24 @@ function start(name) {
 					}
 				} else if (cells[y][x].textContent === "") {
 					const id = window.sessionStorage.getItem("id");
-					fetch(`/block/${x}/${y}/`, {
+					fetch(`/block/`, {
 						method: "PUT",
-						headers: {id},
+						headers: {
+							"Content-Type": "application/json",
+							id,
+						},
+						body: JSON.stringify({x, y}),
 					});
 				}
 			} else if (status === TO) {
 				const id = window.sessionStorage.getItem("id");
-				fetch(`/move/${from[0]}/${from[1]}/${x}/${y}/`, {
+				fetch(`/move/`, {
 					method: "PUT",
-					headers: {id},
+					headers: {
+						"Content-Type": "application/json",
+						id,
+					},
+					body: JSON.stringify({xi: from[0], yi: from[1], xf: x, yf: y}),
 				});
 				clear();
 				status = FROM;
@@ -175,16 +183,24 @@ function start(name) {
 	const lower = document.getElementById("lower");
 	upper.addEventListener("click", event => {
 		const id = window.sessionStorage.getItem("id");
-		fetch(`/sit/0/`, {
+		fetch(`/sit/`, {
 			method: "PUT",
-			headers: {id},
+			headers: {
+				"Content-Type": "application/json",
+				id,
+			},
+			body: JSON.stringify({side: 0}),
 		});
 	});
 	lower.addEventListener("click", event => {
 		const id = window.sessionStorage.getItem("id");
-		fetch(`/sit/1/`, {
+		fetch(`/sit/`, {
 			method: "PUT",
-			headers: {id},
+			headers: {
+				"Content-Type": "application/json",
+				id,
+			},
+			body: JSON.stringify({side: 1}),
 		});
 	});
 
@@ -194,7 +210,10 @@ function start(name) {
 		const id = window.sessionStorage.getItem("id");
 		fetch(`/end/`, {
 			method: "DELETE",
-			headers: {id},
+			headers: {
+				"Content-Type": "application/json",
+				id,
+			},
 		});
 	});
 
@@ -208,7 +227,10 @@ function start(name) {
 		const id = window.sessionStorage.getItem("id");
 		fetch(`/rollback/`, {
 			method: "DELETE",
-			headers: {id},
+			headers: {
+				"Content-Type": "application/json",
+				id,
+			},
 		});
 	});
 

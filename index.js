@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000;
 
 const path = require("path");
 app.use(express.static(path.join(__dirname, "static")));
+app.use(express.json());
 
 const clients = new Map();
 
@@ -96,8 +97,8 @@ function sendUsers() {
 	});
 }
 
-app.get("/event/:name/", (req, res) => {
-	const name = req.params.name;
+app.get("/event/", (req, res) => {
+	const name = req.query.name;
 	const id = String(Date.now() + String(Math.floor(Math.random() * 1000000)).padStart(6, "0"));
 
 	clients.set(res, {name, id});
@@ -142,11 +143,11 @@ setInterval(() => {
 	});
 }, 1000);
 
-app.put("/sit/:side/", (req, res) => {
+app.put("/sit/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
 	const id = req.headers["id"];
-	const side = +req.params.side;
+	const side = +req.body.side;
 
 	if (side !== 0 && side !== 1) return res.sendStatus(400);
 	if (players[side] >= 0) return res.sendStatus(400)
@@ -258,12 +259,12 @@ app.delete("/rollback/", (req, res) => {
 	res.sendStatus(200);
 });
 
-app.put("/block/:x/:y/", (req, res) => {
+app.put("/block/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
 	const id = req.headers["id"];
-	const x = +req.params.x;
-	const y = +req.params.y;
+	const x = +req.body.x;
+	const y = +req.body.y;
 	if (players[game.player] !== id) return res.sendStatus(400);
 	if (game.moved !== 0) return res.sendStatus(400);
 	if (game.board[y][x] !== "") return res.sendStatus(400);
@@ -280,13 +281,13 @@ app.put("/block/:x/:y/", (req, res) => {
 	res.sendStatus(200);
 });
 
-app.put("/move/:xi/:yi/:xf/:yf/", (req, res) => {
+app.put("/move/", (req, res) => {
 	if (game.player === -1) return res.sendStatus(400);
 
-	const xi = +req.params.xi;
-	const yi = +req.params.yi;
-	const xf = +req.params.xf;
-	const yf = +req.params.yf;
+	const xi = +req.body.xi;
+	const yi = +req.body.yi;
+	const xf = +req.body.xf;
+	const yf = +req.body.yf;
 	const id = req.headers["id"];
 	if (players[game.player] !== id) return res.sendStatus(400);
 	if (game.moved === Infinity) return res.sendStatus(400);
