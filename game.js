@@ -24,6 +24,107 @@ PIECES.forEach(piece => {
 	pieces[1].set(piece.toLowerCase(), 0);
 });
 
+function get() {
+	return game;
+}
+
+function checkSide(id) {
+	if (players[0] === id) return 0;
+	if (players[1] === id) return 1;
+	return -1;
+}
+
+function isPlaying(id) {
+	if (game.player === -1) return false;
+	const side = checkSide(id);
+	if (game.player !== side) return false;
+	return true;
+}
+
+function hasEnded() {
+	return game.player === -1;
+}
+
+function hasMoved() {
+	return game.moved !== 0;
+}
+
+function sit(id, name, side) {
+	if (side !== 0 && side !== 1) return false;
+	if (players[side] >= 0) return false;
+	unsit(id, 1 - side);
+	players[side] = id;
+	game.users[side] = name;
+	return true;
+}
+
+function unsit(id, side) {
+	if (side === null) side = checkSide(id);
+	if (side !== 0 && side !== 1) return false;
+	if (checkSide(id) !== side) return false;
+	players[side] = -1;
+	game.users[side] = null;
+	return true;
+}
+
+function endTurn() {
+	pieces[game.player].forEach((state, piece) => {
+		if (state === 0) pieces[game.player].set(piece, 2);
+	});
+
+	for (let i = 0; i < game.board.length; i++) {
+		for (let j = 0; j < game.board[i].length; j++) {
+			const piece = game.board[i][j];
+			if (piece === "") continue;
+			if (piece === piece.toUpperCase()) {
+				if (pieces[0].get(piece) === 2) game.board[i][j] = "";
+			} else if (piece === piece.toLowerCase()) {
+				if (pieces[1].get(piece) === 2) game.board[i][j] = "";
+			}
+		}
+	}
+
+	let counts = [0, 0];
+	PIECES.forEach(piece => {
+		if (pieces[0].get(piece.toUpperCase()) !== 2) counts[0]++;
+		if (pieces[1].get(piece.toLowerCase()) !== 2) counts[1]++;
+	});
+
+	game.movable.length = 0;
+	if (counts[0] * counts[1] === 0) {
+		game.player = -1;
+		if (counts[0] === 0 && counts[1] === 0) return "draw";
+		else if (counts[0] === 0) return "lowercase";
+		else if (counts[1] === 0) return "uppercase";
+	}
+
+	game.turn++;
+	game.player = 1 - game.player;
+	game.moved = 0;
+
+	back = clone(game);
+
+	pieces[game.player].forEach((state, piece) => {
+		if (state !== 0 && state !== 1) return;
+		pieces[game.player].set(piece, 0);
+		game.movable.push(piece);
+	});
+
+	return null;
+}
+
+function rollback() {
+	const users = game.users;
+	game = clone(back);
+	game.users = users;
+
+	game.movable.length = 0;
+	pieces[game.player].forEach((state, piece) => {
+		pieces[game.player].set(piece, 0);
+		game.movable.push(piece);
+	});
+}
+
 function reset() {
 	PIECES.forEach(piece => {
 		pieces[0].set(piece.toUpperCase(), 0);
@@ -47,7 +148,20 @@ function reset() {
 	game.movable = ["K1", "K2", "K3", "P1", "P2", "P3", "P4"];
 }
 
+function block(x, y) {
+	if (game.moved !== 0) return false;
+	if (game.board[y][x] !== "") return false;
+	game.board[y][x] = "*";
+	game.moved = Infinity;
+	game.movable.length = 0;
+	pieces[game.player].forEach((state, piece) => {
+		if (state === 0) pieces[game.player].set(piece, 1)
+	});
+	return true;
+}
+
 function move(xi, yi, xf, yf) {
+	if (game.moved === Infinity) return false;
 	const piece = game.board[yi][xi];
 	if (piece === "") return false;
 	if (game.board[yf][xf] === "*") return false;
@@ -56,6 +170,7 @@ function move(xi, yi, xf, yf) {
 		if (piece[0].toLowerCase() === "k") {
 			if (moveKnight(xi, yi, xf, yf)) {
 				game.movable.splice(index, 1);
+				game.moved += 1;
 				return true;
 			} else {
 				return false;
@@ -64,6 +179,7 @@ function move(xi, yi, xf, yf) {
 		if (piece[0].toLowerCase() === "p") {
 			if (movePawn(xi, yi, xf, yf)) {
 				game.movable.splice(index, 1);
+				game.moved += 1;
 				return true;
 			} else {
 				return false;
@@ -152,10 +268,8 @@ function clone(object) {
 }
 
 module.exports = {
-	players,
-	game, back, PIECES, pieces,
-	reset,
-	move, moveKnight, movePawn,
-	checkOwner,
-	clone,
+	get,
+	hasEnded, isPlaying,
+	sit, unsit, reset,
+	move, block, rollback, endTurn,
 };

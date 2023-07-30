@@ -84,7 +84,7 @@ function start(name) {
 		const x = i % 7;
 		const y = Math.floor(i / 7);
 		span.addEventListener("click", event => {
-			if (!playing) return;
+			//if (!playing) return;
 			if (status === FROM) {
 				if (~movable.indexOf(cells[y][x].piece)) {
 					from = [x, y];
