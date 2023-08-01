@@ -27,6 +27,7 @@ router.put("/sit/", (req, res) => {
 	const side = +req.body.side;
 
 	const info = user.info(id);
+	if (!info) return res.sendStatus(400);
 	const sat = game.sit(info.id, info.name, side);
 	if (!sat) return res.sendStatus(400);
 

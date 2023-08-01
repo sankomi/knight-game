@@ -67,6 +67,7 @@ function unsit(id, side) {
 	return true;
 }
 
+
 function endTurn() {
 	pieces[game.player].forEach((state, piece) => {
 		if (state === 0) pieces[game.player].set(piece, 2);

@@ -20,3 +20,5 @@ const api = require("./api.js");
 app.use("/", api);
 
 app.listen(port, () => console.log(`on ${port}`));
+
+module.exports = app;
