@@ -1,4 +1,4 @@
-const players = [-1, -1];
+let players = [-1, -1];
 let game = {
 	turn: 0,
 	player: 0,
