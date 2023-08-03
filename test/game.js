@@ -104,6 +104,132 @@ describe("game.js", () => {
 		});
 	});
 
+	describe("isPlaying()", () => {
+		describe("when game has ended", () => {
+			beforeEach(() => {
+				mock("player", -1);
+				mock("checkSide", id => -1);
+			});
+
+			it("user should not be playing", () => {
+				game.isPlaying(user.id).should.be.false;
+			});
+			it("another should not be playing", () => {
+				game.isPlaying(another.id).should.be.false;
+			});
+		});
+
+		describe("when side 0 is playing", () => {
+			beforeEach(() => mock("game", {player: 0}));
+
+			describe("and user is on side 0", () => {
+				beforeEach(() => {
+					mock("players", [user.id, -1]);
+					mock("checkSide", id => {
+						if (id === user.id) return 0;
+						else return -1;
+					});
+				});
+
+				it("user should be playing", () => {
+					game.isPlaying(user.id).should.be.true;
+				});
+			});
+
+			describe("and user is on side 1", () => {
+				beforeEach(() => {
+					mock("players", [-1, user.id]);
+					mock("checkSide", id => {
+						if (id === user.id) return 1;
+						else return -1;
+					});
+				});
+
+				it("user should not be playing", () => {
+					game.isPlaying(user.id).should.be.false;
+				});
+			});
+		});
+
+		describe("when side 1 is playing", () => {
+			beforeEach(() => mock("game", {player: 1}));
+
+			describe("and user is on side 0", () => {
+				beforeEach(() => {
+					mock("players", [user.id, -1]);
+					mock("checkSide", id => {
+						if (id === user.id) return 0;
+						else return -1;
+					});
+				});
+
+				it("user should not be playing", () => {
+					game.isPlaying(user.id).should.be.false;
+				});
+			});
+
+			describe("and user is on side 1", () => {
+				beforeEach(() => {
+					mock("players", [-1, user.id]);
+					mock("checkSide", id => {
+						if (id === user.id) return 1;
+						else return -1;
+					});
+				});
+
+				it("user should be playing", () => {
+					game.isPlaying(user.id).should.be.true;
+				});
+			});
+		});
+	});
+
+	describe("hasEnded()", () => {
+		describe("when game has ended", () => {
+			before(() => mock("game", {player: -1}));
+
+			it("should return true", () => {
+				game.hasEnded().should.be.true;
+			});
+		});
+
+		[0, 1].forEach(side => {
+			describe(`when side ${side} is playing`, () => {
+				before(() => mock("game", {player: side}));
+
+				it("should return false", () => {
+					game.hasEnded().should.be.false;
+				});
+			});
+		});
+	});
+
+	describe("hasMoved()", () => {
+		describe("when moved is 0", () => {
+			before(() => mock("game", {moved: 0}));
+
+			it("should return false", () => {
+				game.__get__("hasMoved")().should.be.false;
+			});
+		});
+
+		describe("when moved is not 0", () => {
+			before(() => mock("game", {moved: 4}));
+
+			it("should return true", () => {
+				game.__get__("hasMoved")().should.be.true;
+			});
+		});
+
+		describe("when moved is Infinity", () => {
+			before(() => mock("game", {moved: Infinity}));
+
+			it("should return true", () => {
+				game.__get__("hasMoved")().should.be.true;
+			});
+		});
+	});
+
 	describe("unsit()", () => {
 		describe("when sits are empty", () => {
 			beforeEach(() => {
