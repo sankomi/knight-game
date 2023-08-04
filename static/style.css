@@ -1,0 +1,54 @@
+body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+#room > div {
+	margin-bottom: 0.5rem;
+
+	text-align: center;
+}
+input, button {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	border: 1px solid #444;
+
+	line-height: inherit;
+}
+button {
+	color: white;
+	background: #444;
+}
+.cell {
+	display: inline-block;
+	width: 2rem;
+	height: 2rem;
+	line-height: 2rem;
+	text-align: center;
+	cursor: pointer;
+}
+.cell--black {
+	color: white;
+	background: black;
+}
+.cell--black:hover {
+	background: #333;
+}
+.cell--white {
+	color: black;
+	background: #eee;
+}
+.cell--white:hover {
+	background: #bbb;
+}
+.select {
+	color:white !important;
+	background:#a44 !important;
+}
+.move {
+	color: white !important;
+	background: #4a4 !important;
+}
+.notmovable {
+	color: #888 !important;
+}

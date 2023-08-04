@@ -68,8 +68,9 @@ function sendLeave(id, game) {
 	});
 }
 
-function sendGame(game) {
+function sendGame(game, playing) {
 	clients.forEach((info, client) => {
+		game.playing = info.id === playing;
 		send(client, "game", game);
 	});
 }

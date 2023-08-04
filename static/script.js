@@ -13,44 +13,6 @@ enter.addEventListener("click", event => {
 });
 
 function start(name) {
-	const style = document.createElement("style");
-	style.innerHTML = `
-		.cell {
-			display: inline-block;
-			width: 2rem;
-			height: 2rem;
-			line-height: 2rem;
-			text-align: center;
-			cursor: pointer;
-		}
-		.cell--black {
-			color: white;
-			background: black;
-		}
-		.cell--black:hover {
-			background: #333;
-		}
-		.cell--white {
-			color: black;
-			background: #eee;
-		}
-		.cell--white:hover {
-			background: #bbb;
-		}
-		.select {
-			color:white !important;
-			background:#a44 !important;
-		}
-		.move {
-			color: white !important;
-			background: #4a4 !important;
-		}
-		.notmovable {
-			color: #888 !important;
-		}
-	`;
-	document.head.appendChild(style);
-
 	const es = new EventSource(`/event/?name=${name}`);
 	const out = document.getElementById("out");
 	const game = document.getElementById("game");
@@ -84,7 +46,7 @@ function start(name) {
 		const x = i % 7;
 		const y = Math.floor(i / 7);
 		span.addEventListener("click", event => {
-			//if (!playing) return;
+			if (!playing) return;
 			if (status === FROM) {
 				if (~movable.indexOf(cells[y][x].piece)) {
 					from = [x, y];

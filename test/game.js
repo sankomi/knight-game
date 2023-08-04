@@ -78,7 +78,7 @@ describe("game.js", () => {
 		});
 	});
 
-	describe("checkSide()", () => {
+	describe("checkSide(id)", () => {
 		describe("when sits are empty", () => {
 			before(() => mock("players", [-1, -1]));
 
@@ -104,7 +104,7 @@ describe("game.js", () => {
 		});
 	});
 
-	describe("isPlaying()", () => {
+	describe("isPlaying(id)", () => {
 		describe("when game has ended", () => {
 			beforeEach(() => {
 				mock("player", -1);
@@ -230,7 +230,7 @@ describe("game.js", () => {
 		});
 	});
 
-	describe("unsit()", () => {
+	describe("unsit(id, side)", () => {
 		describe("when sits are empty", () => {
 			beforeEach(() => {
 				mock("players", [-1, -1])
@@ -273,7 +273,7 @@ describe("game.js", () => {
 		});
 	});
 
-	describe("sit()", () => {
+	describe("sit(id, name, side)", () => {
 		describe("when sits are empty", () => {
 			beforeEach(() => {
 				mock("players", [-1, -1]);

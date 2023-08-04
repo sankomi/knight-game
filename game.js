@@ -28,6 +28,10 @@ function get() {
 	return game;
 }
 
+function getPlaying() {
+	return players[game.player];
+}
+
 function checkSide(id) {
 	if (players[0] === id) return 0;
 	if (players[1] === id) return 1;
@@ -269,7 +273,7 @@ function clone(object) {
 }
 
 module.exports = {
-	get,
+	get, getPlaying,
 	hasEnded, isPlaying,
 	sit, unsit, reset,
 	move, block, rollback, endTurn,

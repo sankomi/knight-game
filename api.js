@@ -31,7 +31,7 @@ router.put("/sit/", (req, res) => {
 	const sat = game.sit(info.id, info.name, side);
 	if (!sat) return res.sendStatus(400);
 
-	user.sendGame(game.get());
+	user.sendGame(game.get(), game.getPlaying());
 
 	res.sendStatus(200);
 });
@@ -41,7 +41,7 @@ router.delete("/reset/", (req, res) => {
 	if (!game.hasEnded()) return res.sendStatus(400);
 
 	game.reset();
-	user.sendGame(game.get());
+	user.sendGame(game.get(), game.getPlaying());
 
 	res.sendStatus(200);
 });
@@ -54,7 +54,7 @@ router.delete("/end/", (req, res) => {
 	if (!game.isPlaying(id)) return res.sendStatus(400);
 
 	const result = game.endTurn();
-	user.sendGame(game.get());
+	user.sendGame(game.get(), game.getPlaying());
 
 	if (result === null) return res.sendStatus(200);
 	user.sendResult(result);
@@ -69,7 +69,7 @@ router.delete("/rollback/", (req, res) => {
 	if (!game.isPlaying(id)) return res.sendStatus(400);
 
 	game.rollback();
-	user.sendGame(game.get());
+	user.sendGame(game.get(), game.getPlaying());
 
 	res.sendStatus(200);
 });
@@ -85,7 +85,7 @@ router.put("/block/", (req, res) => {
 
 	const blocked = game.block(x, y);
 	if (!blocked) return res.sendStatus(400);
-	user.sendGame(game.get());
+	user.sendGame(game.get(), game.getPlaying());
 
 	res.sendStatus(200);
 });
@@ -104,7 +104,7 @@ router.put("/move/", (req, res) => {
 	const moved = game.move(xi, yi, xf, yf);
 	if (!moved) return res.sendStatus(400);
 
-	user.sendGame(game.get());
+	user.sendGame(game.get(), game.getPlaying());
 	return res.sendStatus(200);
 });
 
