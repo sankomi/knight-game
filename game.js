@@ -7,17 +7,17 @@ let game = {
 	board: [
 		["", "", "", "", "", "", ""],
 		["", "K1", "", "K2", "", "K3", ""],
-		["P1", "", "P2", "", "P3", "", "P4"],
+		["S1", "", "S2", "", "S3", "", "S4"],
 		["", "", "", "", "", "", ""],
 		["", "", "", "", "", "", ""],
-		["p1", "", "p2", "", "p3", "", "p4"],
+		["s1", "", "s2", "", "s3", "", "s4"],
 		["", "k1", "", "k2", "", "k3", ""],
 		["", "", "", "", "", "", ""],
 	],
-	movable: ["K1", "K2", "K3", "P1", "P2", "P3", "P4"],
+	movable: ["K1", "K2", "K3", "S1", "S2", "S3", "S4"],
 };
 let back = clone(game);
-const PIECES = ["k1", "k2", "k3", "p1", "p2", "p3", "p4"];
+const PIECES = ["k1", "k2", "k3", "s1", "s2", "s3", "s4"];
 const pieces = [new Map(), new Map()];
 PIECES.forEach(piece => {
 	pieces[0].set(piece.toUpperCase(), 0);
@@ -143,20 +143,20 @@ function reset() {
 	game.board = [
 		["", "", "", "", "", "", ""],
 		["", "K1", "", "K2", "", "K3", ""],
-		["P1", "", "P2", "", "P3", "", "P4"],
+		["S1", "", "S2", "", "S3", "", "S4"],
 		["", "", "", "", "", "", ""],
 		["", "", "", "", "", "", ""],
-		["p1", "", "p2", "", "p3", "", "p4"],
+		["s1", "", "s2", "", "s3", "", "s4"],
 		["", "k1", "", "k2", "", "k3", ""],
 		["", "", "", "", "", "", ""],
 	];
-	game.movable = ["K1", "K2", "K3", "P1", "P2", "P3", "P4"];
+	game.movable = ["K1", "K2", "K3", "S1", "S2", "S3", "S4"];
 }
 
 function block(x, y) {
 	if (game.moved !== 0) return false;
 	if (game.board[y][x] !== "") return false;
-	game.board[y][x] = "*";
+	game.board[y][x] = "×";
 	game.moved = Infinity;
 	game.movable.length = 0;
 	pieces[game.player].forEach((state, piece) => {
@@ -181,8 +181,8 @@ function move(xi, yi, xf, yf) {
 				return false;
 			}
 		}
-		if (piece[0].toLowerCase() === "p") {
-			if (movePawn(xi, yi, xf, yf)) {
+		if (piece[0].toLowerCase() === "s") {
+			if (moveSoldier(xi, yi, xf, yf)) {
 				game.movable.splice(index, 1);
 				game.moved += 1;
 				return true;
@@ -231,11 +231,11 @@ function moveKnight(xi, yi, xf, yf) {
 	return true;
 }
 
-function movePawn(xi, yi, xf, yf) {
+function moveSoldier(xi, yi, xf, yf) {
 	const player = game.player;
 	const board = game.board;
-	if (player === 0 && board[yi][xi][0] !== "P") return false;
-	if (player === 1 && board[yi][xi][0] !== "p") return false;
+	if (player === 0 && board[yi][xi][0] !== "S") return false;
+	if (player === 1 && board[yi][xi][0] !== "s") return false;
 
 	let dx = Math.abs(xf - xi);
 	let dy = Math.abs(yf - yi);

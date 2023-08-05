@@ -1,3 +1,7 @@
+* {
+	box-sizing: border-box;
+}
+
 body {
 	display: flex;
 	flex-direction: column;
@@ -10,45 +14,101 @@ body {
 }
 input, button {
 	display: inline-block;
-	padding: 0.25rem 0.75rem;
-	border: 1px solid #444;
-
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #ccc;
+	border-radius: 0.25rem;
 	line-height: inherit;
 }
 button {
-	color: white;
-	background: #444;
+	color: black;
+	background: white;
+}
+#game {
+	position: relative;
+}
+.back {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #fcb13c;
+}
+.back__row {
+	display: flex;
+}
+.back__row > span {
+	position: relative;
+	display: block;
+	width: 2.5rem;
+	height: 2.5rem;
+}
+.back__row > span::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	display: block;
+	width: calc(100% - 1px);
+	height: calc(100% - 1px);
+	border: 1px solid black;
+}
+.row {
+	display: flex;
 }
 .cell {
+	position: relative;
 	display: inline-block;
-	width: 2rem;
-	height: 2rem;
-	line-height: 2rem;
+	width: 2.5rem;
+	height: 2.5rem;
+	color: black;
+	background: none;
+	border-radius: 0.5rem;
 	text-align: center;
 	cursor: pointer;
 }
-.cell--black {
-	color: white;
-	background: black;
+.cell:hover {
+	background: rgb(0, 0, 0, 0.25);
 }
-.cell--black:hover {
-	background: #333;
+.piece {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 50%;
+	line-height: calc(1.75rem - 2px);
+	transform: translate(-50%, -50%);
+	text-transform: uppercase;
 }
-.cell--white {
+.piece--empty {
+	background-color: transparent;
+}
+.piece--block {
+	border: 1px solid #ccc;
 	color: black;
-	background: #eee;
+	background-color: white;
+	border-radius: 0;
 }
-.cell--white:hover {
-	background: #bbb;
+.piece--uppercase {
+	border: 1px solid #ccc;
+	color: red;
+	background-color: white;
+}
+.piece--lowercase {
+	border: 1px solid #ccc;
+	color: blue;
+	background-color: white;
 }
 .select {
-	color:white !important;
-	background:#a44 !important;
+	border: 1px solid #ccc;
+	background: #ccc !important;
 }
 .move {
+	border: 1px solid #ccc;
 	color: white !important;
 	background: #4a4 !important;
 }
 .notmovable {
-	color: #888 !important;
+	color: rgba(0, 0, 0, 0.25);
 }

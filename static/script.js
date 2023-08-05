@@ -29,18 +29,16 @@ function start(name) {
 	for (let i = 0; i < 56; i++) {
 		const span = document.createElement("span");
 		span.classList.add("cell");
-		if (i % 2 === 0) {
-			span.classList.add("cell--black");
-		} else {
-			span.classList.add("cell--white");
-		}
 		if (i % 7 === 0) {
 			cells.push([]);
 			div = document.createElement("div");
-			div.style.display = "flex";
+			div.classList.add("row");
 			game.appendChild(div);
 		}
-		cells[cells.length - 1].push(span);
+		const piece = document.createElement("span");
+		piece.classList.add("piece");
+		span.appendChild(piece);
+		cells[cells.length - 1].push(piece);
 		div.appendChild(span);
 
 		const x = i % 7;
@@ -57,7 +55,7 @@ function start(name) {
 					if (!piece) side = -1;
 					else if (piece.toUpperCase() === piece) side = 0;
 					else if (piece.toLowerCase() === piece) side = 1;
-					if (piece.toLowerCase() === "p") {
+					if (piece.toLowerCase() === "s") {
 						move(x, y, -1,  0, side);
 						move(x, y,  1,  0, side);
 						move(x, y,  0, -1, side);
@@ -229,11 +227,16 @@ function start(name) {
 	});
 
 	es.addEventListener("end", event => {
-		showMessage(`end  : ${JSON.parse(event.data)} win`);
-		alert(`${JSON.parse(event.data)} win`);
+		const json = JSON.parse(event.data);
+		let message;
+		if (json === "uppercase") message = "red win";
+		else if (json === "lowercase") message = "blue win";
+		else message = "draw";
+		showMessage(`end  : ${json}`);
+		alert(message);
 	});
 
-	es.addEventListener("sat", event => showMessage(`sat  : ${event.data === 0? "uppercase": "lowercase"}`));
+	es.addEventListener("sat", event => showMessage(`sat  : ${event.data === 0? "red": "blue"}`));
 
 	es.addEventListener("setid", event => {
 		const id = JSON.parse(event.data);
@@ -274,9 +277,21 @@ function start(name) {
 			for (let j = 0; j < board[i].length; j++) {
 				cells[i][j].piece = board[i][j];
 				cells[i][j].textContent = board[i][j].slice(0, 1);
-				cells[i][j].classList.remove("notmovable");
+				cells[i][j].classList.remove(...cells[i][j].classList);
 				if (playing && !~movable.indexOf(cells[i][j].piece)) {
 					cells[i][j].classList.add("notmovable");
+				}
+				cells[i][j].classList.add("piece");
+				if (cells[i][j].textContent === "") {
+					cells[i][j].classList.add("piece--empty");
+				} else if (cells[i][j].textContent === "×") {
+					cells[i][j].classList.add("piece--block");
+				} else if (cells[i][j].textContent === cells[i][j].textContent.toUpperCase()) {
+					cells[i][j].classList.add("piece--uppercase");
+				} else if (cells[i][j].textContent === cells[i][j].textContent.toLowerCase()) {
+					cells[i][j].classList.add("piece--lowercase");
+				} else {
+					cells[i][j].classList.add("piece--empty");
 				}
 			}
 		}

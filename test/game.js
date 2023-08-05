@@ -63,14 +63,14 @@ describe("game.js", () => {
 			it("should have 3 uppercase knights", () => {
 				count("K").should.equal(3);
 			});
-			it("should have 4 uppercase pawns", () => {
-				count("P").should.equal(4);
+			it("should have 4 uppercase soliders", () => {
+				count("S").should.equal(4);
 			});
 			it("should have 3 lowercase knights", () => {
 				count("k").should.equal(3);
 			});
-			it("should have 4 lowercase pawns", () => {
-				count("p").should.equal(4);
+			it("should have 4 lowercase soliders", () => {
+				count("s").should.equal(4);
 			});
 			it("should have 7 movable pieces", () => {
 				g.movable.length.should.equal(7);
