@@ -116,7 +116,7 @@ function start(name) {
 			else if (dy === -2) block = cells[y - 1][x].textContent;
 
 			if (block) {
-				if (block === "*") return;
+				if (block === "x") return;
 				else if (block.toUpperCase() === block && side === 1) return;
 				else if (block.toLowerCase() === block && side === 0) return;
 			}

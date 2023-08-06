@@ -151,12 +151,14 @@ function reset() {
 		["", "", "", "", "", "", ""],
 	];
 	game.movable = ["K1", "K2", "K3", "S1", "S2", "S3", "S4"];
+
+	back = clone(game);
 }
 
 function block(x, y) {
 	if (game.moved !== 0) return false;
 	if (game.board[y][x] !== "") return false;
-	game.board[y][x] = "×";
+	game.board[y][x] = "x";
 	game.moved = Infinity;
 	game.movable.length = 0;
 	pieces[game.player].forEach((state, piece) => {
@@ -169,7 +171,7 @@ function move(xi, yi, xf, yf) {
 	if (game.moved === Infinity) return false;
 	const piece = game.board[yi][xi];
 	if (piece === "") return false;
-	if (game.board[yf][xf] === "*") return false;
+	if (game.board[yf][xf] === "x") return false;
 	const index = game.movable.indexOf(piece);
 	if (~index) {
 		if (piece[0].toLowerCase() === "k") {
@@ -262,7 +264,7 @@ function moveSoldier(xi, yi, xf, yf) {
 function checkOwner(x, y, player = -1) {
 	const piece = game.board[y][x];
 	if (piece === "") return player;
-	if (piece === "*") return 2;
+	if (piece === "x") return 2;
 	if (piece === piece.toLowerCase()) return 1;
 	if (piece === piece.toUpperCase()) return 0;
 	return player;
