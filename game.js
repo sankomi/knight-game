@@ -77,16 +77,24 @@ function endTurn() {
 		if (state === 0) pieces[game.player].set(piece, 2);
 	});
 
+	let count = 0;
 	for (let i = 0; i < game.board.length; i++) {
 		for (let j = 0; j < game.board[i].length; j++) {
 			const piece = game.board[i][j];
 			if (piece === "") continue;
+			count++;
+			if (piece === "x") continue;
 			if (piece === piece.toUpperCase()) {
 				if (pieces[0].get(piece) === 2) game.board[i][j] = "";
 			} else if (piece === piece.toLowerCase()) {
 				if (pieces[1].get(piece) === 2) game.board[i][j] = "";
 			}
 		}
+	}
+
+	if (count >= 56) {
+		game.player = -1;
+		return "draw";
 	}
 
 	let counts = [0, 0];

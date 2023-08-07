@@ -25,6 +25,7 @@ function start(name) {
 	let status = FROM;
 	let from = [0, 0];
 	let movable = [];
+	let moved = 0;
 	let coloured = [];
 	for (let i = 0; i < 56; i++) {
 		const span = document.createElement("span");
@@ -166,6 +167,7 @@ function start(name) {
 
 	const end = document.getElementById("end");
 	end.addEventListener("click", event => {
+		if (moved === 0 && !confirm("are you sure??")) return;
 		clear();
 		const id = window.sessionStorage.getItem("id");
 		fetch(`/end/`, {
@@ -258,6 +260,7 @@ function start(name) {
 		upperuser.textContent = json.users[0] || "(empty)";
 		loweruser.textContent = json.users[1] || "(empty)";
 		movable = json.movable;
+		moved = json.moved;
 		playing = json.playing;
 		const board = json.board;
 		switch (json.player) {
