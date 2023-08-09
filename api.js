@@ -19,6 +19,17 @@ router.get("/event/", (req, res) => {
 	});
 });
 
+router.post("/chat/", (req, res) => {
+	const {game, user} = res.locals;
+	const id = req.headers["id"];
+	const chat = req.body.chat;
+
+	const name = user.info(id).name;
+	user.sendChat(name, chat);
+
+	res.sendStatus(200);
+});
+
 router.put("/sit/", (req, res) => {
 	const {game, user} = res.locals;
 	if (game.hasEnded()) return res.sendStatus(400);

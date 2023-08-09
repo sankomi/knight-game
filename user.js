@@ -18,6 +18,8 @@ function info(id) {
 }
 
 function enter(res, name, game) {
+	name = name.substring(0, 10);
+	if (name.trim() === "") name = "user" + String(Math.floor(Math.random() * 999));
 	const id = String(Date.now() + String(Math.floor(Math.random() * 1000000)).padStart(6, "0"));
 	clients.set(res, {name,id});
 	send(res, "setid", id);
@@ -81,6 +83,13 @@ function sendResult(result) {
 	});
 }
 
+function sendChat(name, chat) {
+	chat = chat.substring(0, 50);
+	clients.forEach((info, client) => {
+		send(client, "chat", `${name}: ${chat}`);
+	});
+}
+
 function sendGame2(client, game, players) {
 	const info = clients.get(client);
 	const id = info.id;
@@ -104,5 +113,5 @@ function sendUsers() {
 module.exports = {
 	find, info,
 	enter, leave,
-	sendGame, sendResult,
+	sendChat, sendGame, sendResult,
 };

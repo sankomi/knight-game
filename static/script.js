@@ -211,6 +211,40 @@ function start(name) {
 		es.addEventListener(type, event => showMessage(`${type}: ${event.data}`));
 	});
 
+	const chatInput = document.getElementById("chat-input");
+	const chatForm = document.getElementById("chat-form");
+	chatForm.addEventListener("submit", event => {
+		event.preventDefault();
+		const id = window.sessionStorage.getItem("id");
+		fetch("/chat/", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				id,
+			},
+			body: JSON.stringify({
+				chat: chatInput.value,
+			}),
+		})
+			.then(res => {
+				chatForm.reset();
+			});
+	});
+
+	const chat = document.getElementById("chat");
+	const messages = [];
+	es.addEventListener("chat", event => {
+		const text = JSON.parse(event.data);
+		const p = document.createElement("p");
+		p.textContent = text;
+		messages.unshift(p);
+		messages.length = 10;
+		chat.innerHTML = "";
+		messages.forEach(message => {
+			chat.appendChild(message);
+		});
+	});
+
 	es.addEventListener("users", event => {
 		let json;
 		try {
