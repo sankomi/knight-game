@@ -4,7 +4,7 @@ setInterval(() => {
 	clients.forEach((info, client) => {
 		send(client, "ping", 1);
 	});
-}, 1000);
+}, 30000);
 
 function find(id) {
 	for ([client, info] of clients.entries()) {
@@ -24,6 +24,8 @@ function enter(res, name, game) {
 	clients.set(res, {name,id});
 	send(res, "setid", id);
 	sendEnter(id, game);
+
+	return id;
 }
 
 function leave(res, id, game) {

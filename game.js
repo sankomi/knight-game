@@ -71,13 +71,13 @@ function unsit(id, side) {
 	return true;
 }
 
-
 function endTurn() {
 	pieces[game.player].forEach((state, piece) => {
 		if (state === 0) pieces[game.player].set(piece, 2);
 	});
 
 	let count = 0;
+	let upperMovable = false, lowerMovable = false;
 	for (let i = 0; i < game.board.length; i++) {
 		for (let j = 0; j < game.board[i].length; j++) {
 			const piece = game.board[i][j];
@@ -85,10 +85,23 @@ function endTurn() {
 			count++;
 			if (piece === "x") continue;
 			if (piece === piece.toUpperCase()) {
+				if (checkPiece(piece, j, i)) upperMovable = true;
 				if (pieces[0].get(piece) === 2) game.board[i][j] = "";
 			} else if (piece === piece.toLowerCase()) {
+				if (checkPiece(piece, j, i)) lowerMovable = true;
 				if (pieces[1].get(piece) === 2) game.board[i][j] = "";
 			}
+		}
+	}
+
+	if (!upperMovable || !lowerMovable) {
+		game.player = -1;
+		if (!upperMovable && !lowerMovable) {
+			return "draw";
+		} else if (!upperMovable) {
+			return "lowercase";
+		} else if (!lowerMovable) {
+			return "uppercase";
 		}
 	}
 
@@ -265,6 +278,53 @@ function moveSoldier(xi, yi, xf, yf) {
 	} else {
 		return false;
 	}
+
+	return true;
+}
+
+function checkPiece(piece, x, y) {
+	const side = checkOwner(x, y);
+	if (side !== 0 && side !== 1) return false;
+
+	const knight = piece[0].toLowerCase() === "k";
+	let movable = false;
+	if (knight) {
+		movable = movable || checkMove(x, y, -1,  2, side, true);
+		movable = movable || checkMove(x, y, -1, -2, side, true);
+		movable = movable || checkMove(x, y,  1,  2, side, true);
+		movable = movable || checkMove(x, y,  1, -2, side, true);
+		movable = movable || checkMove(x, y,  2, -1, side, true);
+		movable = movable || checkMove(x, y, -2, -1, side, true);
+		movable = movable || checkMove(x, y,  2,  1, side, true);
+		movable = movable || checkMove(x, y, -2,  1, side, true);
+	} else {
+		movable = movable || checkMove(x, y, -1,  0, side, false);
+		movable = movable || checkMove(x, y,  1,  0, side, false);
+		movable = movable || checkMove(x, y,  0, -1, side, false);
+		movable = movable || checkMove(x, y,  0,  1, side, false);
+	}
+	return movable;
+}
+function checkMove(x, y, dx, dy, side, knight) {
+	if (y + dy < 0 || y + dy >= game.board.length) return false;
+	if (x + dx < 0 || x + dx >= game.board[y + dy].length) return false;
+
+	if (knight) {
+		let block = null;
+		if (dx === 2) block = game.board[y][x + 1];
+		else if(dx === -2) block = game.board[y][x - 1];
+		else if (dy === 2) block = game.board[y + 1][x];
+		else if (dy === -2) block = game.board[y - 1][x];
+
+		if (block) {
+			if (block === "x") return;
+			else if (block.toUpperCase() === block && side === 1) return false;
+			else if (block.toLowerCase() === block && side === 0) return false;
+		}
+	}
+
+	const target = game.board[y + dy][x + dx];
+	if (target) return false;
 
 	return true;
 }

@@ -125,7 +125,8 @@ function start(name) {
 
 		const target = cells[y + dy][x + dx].textContent;
 		if (target) {
-			if (target.toUpperCase() === target && side === 0) return;
+			if (target === "x") return;
+			else if (target.toUpperCase() === target && side === 0) return;
 			else if (target.toLowerCase() === target && side === 1) return;
 		}
 		cells[y + dy][x + dx].classList.add("move");
@@ -167,7 +168,7 @@ function start(name) {
 
 	const end = document.getElementById("end");
 	end.addEventListener("click", event => {
-		if (moved === 0 && !confirm("are you sure??")) return;
+		if (moved === 0 && playing && !confirm("are you sure??")) return;
 		clear();
 		const id = window.sessionStorage.getItem("id");
 		fetch(`/end/`, {

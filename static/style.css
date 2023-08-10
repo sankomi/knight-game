@@ -26,6 +26,7 @@ button {
 }
 #game {
 	position: relative;
+	user-select: none;
 }
 .back {
 	position: absolute;
